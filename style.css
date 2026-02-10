@@ -297,6 +297,7 @@ th {
   font-family: monospace;
   font-size: 0.9rem;
   margin-bottom: 2rem;
+  min-width: 290px;
 }
 
 /* ---- Feature cards (landing) ---- */
