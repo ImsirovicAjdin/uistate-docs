@@ -18,7 +18,7 @@
     <a href="event-test.html">Event Test</a>
   </nav>
   <div class="header-right">
-    <a href="https://github.com/ImsirovicAjdin/uistate">GitHub</a>
+    <a href="https://github.com/ImsirovicAjdin/uistate/stargazers" class="star-link">★ Star</a>
     <a href="https://www.npmjs.com/package/@uistate/core">npm</a>
     <button id="theme-toggle" onclick="__toggleTheme()" aria-label="Switch theme">☾</button>
   </div>
@@ -57,11 +57,14 @@
 
 <main class="main">
 
-  <h1>@uistate/core</h1>
+  <h1>@uistate/core <span class="version-badge">5.5.2</span></h1>
   <p>Path-based state management with wildcard subscriptions and async support. ~6 KB, zero dependencies.</p>
 
   <h2 id="install">Install</h2>
-  <pre><code>npm install @uistate/core</code></pre>
+  <div class="install-wrap">
+    <pre><code>npm install @uistate/core</code></pre>
+    <button class="copy-btn" onclick="__copy('npm install @uistate/core', this)">Copy</button>
+  </div>
 
   <h2 id="quick-start">Quick Start</h2>
   <pre><code>import { createEventState } from '@uistate/core';
@@ -241,5 +244,14 @@ store.subscribe('users.error', (msg) =&gt; {
 
 </main>
 
+<script>
+function __copy(text, btn) {
+  navigator.clipboard.writeText(text).then(function () {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+</script>
 </body>
 </html>

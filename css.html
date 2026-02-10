@@ -18,7 +18,7 @@
     <a href="event-test.html">Event Test</a>
   </nav>
   <div class="header-right">
-    <a href="https://github.com/ImsirovicAjdin/uistate-css">GitHub</a>
+    <a href="https://github.com/ImsirovicAjdin/uistate-css/stargazers" class="star-link">★ Star</a>
     <a href="https://www.npmjs.com/package/@uistate/css">npm</a>
     <button id="theme-toggle" onclick="__toggleTheme()" aria-label="Switch theme">☾</button>
   </div>
@@ -55,11 +55,14 @@
 
 <main class="main">
 
-  <h1>@uistate/css</h1>
+  <h1>@uistate/css <span class="version-badge">1.0.0</span></h1>
   <p>CSS-native state management using CSS custom properties and data attributes. No bundler, no framework — state lives in CSS and is inspectable in DevTools.</p>
 
   <h2 id="install">Install</h2>
-  <pre><code>npm install @uistate/css</code></pre>
+  <div class="install-wrap">
+    <pre><code>npm install @uistate/css</code></pre>
+    <button class="copy-btn" onclick="__copy('npm install @uistate/css', this)">Copy</button>
+  </div>
 
   <h2 id="overview">Overview</h2>
   <p><code>@uistate/css</code> stores state directly in CSS custom properties (<code>--key: value</code>) on <code>:root</code> and as <code>data-*</code> attributes on elements. This means:</p>
@@ -177,5 +180,14 @@ connectedCallback() {
 
 </main>
 
+<script>
+function __copy(text, btn) {
+  navigator.clipboard.writeText(text).then(function () {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+</script>
 </body>
 </html>

@@ -18,7 +18,7 @@
     <a href="event-test.html">Event Test</a>
   </nav>
   <div class="header-right">
-    <a href="https://github.com/ImsirovicAjdin/uistate">GitHub</a>
+    <a href="https://github.com/ImsirovicAjdin/uistate/stargazers" class="star-link">★ Star</a>
     <a href="https://www.npmjs.com/package/@uistate/core">npm</a>
     <button id="theme-toggle" onclick="__toggleTheme()" aria-label="Switch theme">☾</button>
   </div>
@@ -28,10 +28,13 @@
   <div class="hero">
     <h1>UIstate</h1>
     <p class="tagline">Path-based state management with wildcard subscriptions, async support, and state-driven CSS.</p>
-    <div class="install">npm install @uistate/core</div>
+    <div class="install-wrap">
+      <div class="install">npm install @uistate/core</div>
+      <button class="copy-btn" onclick="__copy('npm install @uistate/core', this)">Copy</button>
+    </div>
     <div class="cta">
       <a href="core.html" class="primary">Get Started</a>
-      <a href="https://github.com/ImsirovicAjdin/uistate" class="secondary">View Source</a>
+      <a href="https://github.com/ImsirovicAjdin/uistate/stargazers" class="secondary">★ Star on GitHub</a>
     </div>
   </div>
 
@@ -73,23 +76,33 @@ store.get('user.name');        // 'Bob'</code></pre>
     <tbody>
       <tr>
         <td><a href="core.html">@uistate/core</a></td>
-        <td>5.5.1</td>
-        <td>Event-driven state management</td>
+        <td><span class="version-badge">5.5.2</span></td>
+        <td>Path-based state management</td>
+      </tr>
+      <tr>
+        <td><a href="react.html">@uistate/react</a></td>
+        <td><span class="version-badge">1.0.0</span></td>
+        <td>React adapter hooks</td>
       </tr>
       <tr>
         <td><a href="css.html">@uistate/css</a></td>
-        <td>1.0.0</td>
+        <td><span class="version-badge">1.0.0</span></td>
         <td>CSS-native state via custom properties</td>
       </tr>
       <tr>
         <td><a href="event-test.html">@uistate/event-test</a></td>
-        <td>1.0.0</td>
-        <td>Event-sequence testing (proprietary license)</td>
+        <td><span class="version-badge">1.0.0</span></td>
+        <td>Event-sequence testing</td>
       </tr>
       <tr>
         <td><a href="https://www.npmjs.com/package/@uistate/examples">@uistate/examples</a></td>
-        <td>1.0.0</td>
-        <td>Example applications and patterns</td>
+        <td><span class="version-badge">1.0.0</span></td>
+        <td>Example applications</td>
+      </tr>
+      <tr>
+        <td><a href="https://www.npmjs.com/package/@uistate/aliases">@uistate/aliases</a></td>
+        <td><span class="version-badge">1.0.0</span></td>
+        <td>DOM aliases for vanilla JS</td>
       </tr>
     </tbody>
   </table>
@@ -109,5 +122,14 @@ store.get('user.name');        // 'Bob'</code></pre>
 
 </main>
 
+<script>
+function __copy(text, btn) {
+  navigator.clipboard.writeText(text).then(function () {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+</script>
 </body>
 </html>

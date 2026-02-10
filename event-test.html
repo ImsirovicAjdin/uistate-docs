@@ -18,7 +18,7 @@
     <a href="event-test.html" class="active">Event Test</a>
   </nav>
   <div class="header-right">
-    <a href="https://github.com/ImsirovicAjdin/uistate-event-test">GitHub</a>
+    <a href="https://github.com/ImsirovicAjdin/uistate-event-test/stargazers" class="star-link">★ Star</a>
     <a href="https://www.npmjs.com/package/@uistate/event-test">npm</a>
     <button id="theme-toggle" onclick="__toggleTheme()" aria-label="Switch theme">☾</button>
   </div>
@@ -50,11 +50,14 @@
 
 <main class="main">
 
-  <h1>@uistate/event-test</h1>
+  <h1>@uistate/event-test <span class="version-badge">1.0.0</span></h1>
   <p>Event-sequence testing for UIstate stores. Trigger state changes and assert values, types, and event firings in a chainable API.</p>
 
   <h2 id="install">Install</h2>
-  <pre><code>npm install @uistate/event-test @uistate/core</code></pre>
+  <div class="install-wrap">
+    <pre><code>npm install @uistate/event-test @uistate/core</code></pre>
+    <button class="copy-btn" onclick="__copy('npm install @uistate/event-test @uistate/core', this)">Copy</button>
+  </div>
   <p><code>@uistate/core</code> is a peer dependency.</p>
 
   <h2 id="license">License</h2>
@@ -139,5 +142,14 @@ t.assertType('user.name', 'string');</code></pre>
 
 </main>
 
+<script>
+function __copy(text, btn) {
+  navigator.clipboard.writeText(text).then(function () {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+</script>
 </body>
 </html>

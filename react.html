@@ -18,7 +18,7 @@
     <a href="event-test.html">Event Test</a>
   </nav>
   <div class="header-right">
-    <a href="https://github.com/ImsirovicAjdin/uistate-react">GitHub</a>
+    <a href="https://github.com/ImsirovicAjdin/uistate-react/stargazers" class="star-link">★ Star</a>
     <a href="https://www.npmjs.com/package/@uistate/react">npm</a>
     <button id="theme-toggle" onclick="__toggleTheme()" aria-label="Switch theme">☾</button>
   </div>
@@ -52,11 +52,14 @@
 
 <main class="main">
 
-  <h1>@uistate/react</h1>
+  <h1>@uistate/react <span class="version-badge">1.0.0</span></h1>
   <p>React adapter for <a href="core.html">@uistate/core</a>. Five hooks and a provider — that's the entire API. ~50 lines, zero dependencies beyond React and the core store.</p>
 
   <h2 id="install">Install</h2>
-  <pre><code>npm install @uistate/react @uistate/core react</code></pre>
+  <div class="install-wrap">
+    <pre><code>npm install @uistate/react @uistate/core react</code></pre>
+    <button class="copy-btn" onclick="__copy('npm install @uistate/react @uistate/core react', this)">Copy</button>
+  </div>
   <p>Peer dependencies: <code>@uistate/core &gt;=5.0.0</code> and <code>react &gt;=18.0.0</code>.</p>
 
   <h2 id="quick-start">Quick Start</h2>
@@ -278,5 +281,14 @@ test('filter shows only active tasks', () =&gt; {
 
 </main>
 
+<script>
+function __copy(text, btn) {
+  navigator.clipboard.writeText(text).then(function () {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+</script>
 </body>
 </html>
