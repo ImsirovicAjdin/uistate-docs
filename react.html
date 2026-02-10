@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@uistate/react — API Reference</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="theme.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="/" class="logo">UIstate</a>
+  <nav>
+    <a href="core.html">Core</a>
+    <a href="css.html">CSS</a>
+    <a href="react.html" class="active">React</a>
+    <a href="event-test.html">Event Test</a>
+  </nav>
+  <div class="header-right">
+    <a href="https://github.com/ImsirovicAjdin/uistate-react">GitHub</a>
+    <a href="https://www.npmjs.com/package/@uistate/react">npm</a>
+    <button id="theme-toggle" onclick="__toggleTheme()" aria-label="Switch theme">☾</button>
+  </div>
+</header>
+
+<aside class="sidebar">
+  <h3>Getting Started</h3>
+  <ul>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#quick-start">Quick Start</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+  </ul>
+  <h3>API</h3>
+  <ul>
+    <li><a href="#EventStateProvider">EventStateProvider</a></li>
+    <li><a href="#useStore">useStore</a></li>
+    <li><a href="#usePath">usePath</a></li>
+    <li><a href="#useIntent">useIntent</a></li>
+    <li><a href="#useWildcard">useWildcard</a></li>
+    <li><a href="#useAsync">useAsync</a></li>
+  </ul>
+  <h3>Patterns</h3>
+  <ul>
+    <li><a href="#namespaces">Three Namespaces</a></li>
+    <li><a href="#business-logic">Business Logic</a></li>
+    <li><a href="#derived-state">Derived State</a></li>
+    <li><a href="#race-conditions">Race Conditions</a></li>
+    <li><a href="#testing">Testing Without React</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+  <h1>@uistate/react</h1>
+  <p>React adapter for <a href="core.html">@uistate/core</a>. Five hooks and a provider — that's the entire API. ~50 lines, zero dependencies beyond React and the core store.</p>
+
+  <h2 id="install">Install</h2>
+  <pre><code>npm install @uistate/react @uistate/core react</code></pre>
+  <p>Peer dependencies: <code>@uistate/core &gt;=5.0.0</code> and <code>react &gt;=18.0.0</code>.</p>
+
+  <h2 id="quick-start">Quick Start</h2>
+  <pre><code>import { createEventState } from '@uistate/core';
+import { EventStateProvider, usePath, useIntent } from '@uistate/react';
+
+// Store lives outside React
+const store = createEventState({
+  state: { count: 0 },
+});
+
+// Business logic lives outside React
+store.subscribe('intent.increment', () =&gt; {
+  store.set('state.count', store.get('state.count') + 1);
+});
+
+function Counter() {
+  const count = usePath('state.count');
+  const increment = useIntent('intent.increment');
+  return &lt;button onClick={() =&gt; increment(true)}&gt;Count: {count}&lt;/button&gt;;
+}
+
+function App() {
+  return (
+    &lt;EventStateProvider store={store}&gt;
+      &lt;Counter /&gt;
+    &lt;/EventStateProvider&gt;
+  );
+}</code></pre>
+
+  <h2 id="architecture">Architecture</h2>
+  <p>The key insight: <strong>React is a rendering engine, not the application architecture.</strong></p>
+  <ul>
+    <li>The store is created <em>outside</em> React — its lifecycle is independent</li>
+    <li>Business logic lives in <em>subscribers</em>, not event handlers</li>
+    <li>Components declare what they read (<code>usePath</code>) and what they publish (<code>useIntent</code>)</li>
+    <li>The provider is dependency injection, not a state container</li>
+  </ul>
+  <p>This means you can test all business logic without rendering a single component, share state across multiple React trees (or non-React UIs), and swap the view layer without touching state code.</p>
+
+  <h2 id="EventStateProvider">EventStateProvider</h2>
+  <div class="api-sig">&lt;EventStateProvider store={store}&gt; children &lt;/EventStateProvider&gt;</div>
+  <p>Makes a store available to descendant hooks via React Context. The store is created outside React — the provider doesn't own, create, or destroy it.</p>
+  <pre><code>import { createEventState } from '@uistate/core';
+
+// store.js — created once, outside any component
+export const store = createEventState({ state: { tasks: [] } });
+
+// App.jsx
+import { EventStateProvider } from '@uistate/react';
+import { store } from './store.js';
+
+export default function App() {
+  return (
+    &lt;EventStateProvider store={store}&gt;
+      &lt;Header /&gt;
+      &lt;TaskList /&gt;
+    &lt;/EventStateProvider&gt;
+  );
+}</code></pre>
+  <p><strong>Why not just import the store directly?</strong> You can. The provider makes testing easier (inject a mock store) and makes the dependency explicit. Either approach works.</p>
+
+  <h2 id="useStore">useStore()</h2>
+  <div class="api-sig">useStore() → store</div>
+  <p>Returns the EventState store from context. Throws if called outside a provider.</p>
+  <pre><code>const store = useStore();
+const value = store.get('some.path');</code></pre>
+  <p>You rarely need this — <code>usePath</code> and <code>useIntent</code> cover most cases. Use <code>useStore</code> when you need direct access for advanced patterns.</p>
+
+  <h2 id="usePath">usePath(path)</h2>
+  <div class="api-sig">usePath(path: string) → any</div>
+  <p>Subscribe to a dot-path. Re-renders the component <strong>only</strong> when the value at that path changes. Uses React 18's <code>useSyncExternalStore</code> for concurrent-mode safety.</p>
+  <pre><code>function Header() {
+  const count = usePath('state.taskCount') || 0;
+  return &lt;span&gt;{count} task{count === 1 ? '' : 's'}&lt;/span&gt;;
+}
+
+function TaskList() {
+  const items = usePath('derived.tasks.filtered') || [];
+  return &lt;ul&gt;{items.map(t =&gt; &lt;li key={t.id}&gt;{t.text}&lt;/li&gt;)}&lt;/ul&gt;;
+}</code></pre>
+  <p>This is the "read" side of the contract. No props, no selectors, no context consumers — just a path.</p>
+
+  <h2 id="useIntent">useIntent(path)</h2>
+  <div class="api-sig">useIntent(path: string) → (value: any) → any</div>
+  <p>Returns a stable, memoized function that publishes a value to a path. Safe to pass as a prop without causing re-renders.</p>
+  <pre><code>function TaskInput() {
+  const [text, setText] = useState('');
+  const add = useIntent('intent.addTask');
+
+  return &lt;input
+    value={text}
+    onKeyDown={(e) =&gt; {
+      if (e.key === 'Enter') { add(text); setText(''); }
+    }}
+  /&gt;;
+}</code></pre>
+  <p>This is the "write" side. The component publishes intent. A subscriber handles the logic.</p>
+
+  <h2 id="useWildcard">useWildcard(path)</h2>
+  <div class="api-sig">useWildcard(wildcardPath: string) → any</div>
+  <p>Subscribe to a wildcard path. Re-renders when <em>any</em> child of that path changes. Returns the parent object.</p>
+  <pre><code>function UserCard() {
+  const user = useWildcard('state.user.*');
+  // Re-renders when state.user.name, state.user.email, etc. change
+  return &lt;div&gt;{user?.name} ({user?.email})&lt;/div&gt;;
+}</code></pre>
+
+  <h2 id="useAsync">useAsync(path)</h2>
+  <div class="api-sig">useAsync(path: string) → { data, status, error, execute, cancel }</div>
+  <p>Async data fetching with automatic status tracking. Wraps <code>store.setAsync</code> and subscribes to the <code>.data</code>, <code>.status</code>, and <code>.error</code> sub-paths.</p>
+  <pre><code>function UserList() {
+  const { data, status, error, execute, cancel } = useAsync('users');
+
+  useEffect(() =&gt; {
+    execute((signal) =&gt;
+      fetch('/api/users', { signal }).then(r =&gt; r.json())
+    );
+  }, [execute]);
+
+  if (status === 'loading') return &lt;Spinner /&gt;;
+  if (error) return &lt;p&gt;Error: {error}&lt;/p&gt;;
+  return &lt;ul&gt;{data?.map(u =&gt; &lt;li key={u.id}&gt;{u.name}&lt;/li&gt;)}&lt;/ul&gt;;
+}</code></pre>
+  <p>Calling <code>execute</code> again auto-aborts the previous in-flight request. No race conditions, no stale data, no cleanup code.</p>
+
+  <h2 id="namespaces">Three Namespaces</h2>
+  <p>The recommended convention for structuring your store:</p>
+  <table>
+    <thead><tr><th>Namespace</th><th>Purpose</th><th>Hook</th></tr></thead>
+    <tbody>
+      <tr><td><code>state.*</code></td><td>Authoritative application state</td><td><code>usePath</code></td></tr>
+      <tr><td><code>derived.*</code></td><td>Computed projections (pure functions of state)</td><td><code>usePath</code></td></tr>
+      <tr><td><code>intent.*</code></td><td>Write-only signals from the UI</td><td><code>useIntent</code></td></tr>
+    </tbody>
+  </table>
+  <p>This is Model-View-Intent (MVI) inside a single object:</p>
+  <ul>
+    <li><strong>state.*</strong> is the Model (single source of truth)</li>
+    <li><strong>derived.*</strong> is the ViewModel (formatted for the view)</li>
+    <li><strong>intent.*</strong> is the Controller (user actions)</li>
+  </ul>
+  <pre><code>const store = createEventState({
+  state: { tasks: [], taskCount: 0, filter: 'all' },
+  derived: { tasks: { filtered: [] } },
+});</code></pre>
+
+  <h2 id="business-logic">Business Logic Outside Components</h2>
+  <p>In a typical React app, logic lives in event handlers inside components. In EventState + React, logic lives in subscribers — testable, reusable, and decoupled:</p>
+  <pre><code>// store.js — no React imports
+store.subscribe('intent.addTask', (text) =&gt; {
+  const t = String(text || '').trim();
+  if (!t) return;
+  const tasks = store.get('state.tasks') || [];
+  const next = [...tasks, { id: genId(), text: t, completed: false }];
+  store.set('state.tasks', next);
+  store.set('state.taskCount', next.length);
+});
+
+store.subscribe('intent.toggleTask', (id) =&gt; {
+  const tasks = store.get('state.tasks') || [];
+  store.set('state.tasks',
+    tasks.map(x =&gt; x.id === id ? { ...x, completed: !x.completed } : x)
+  );
+});</code></pre>
+  <p>Test it without React:</p>
+  <pre><code>store.set('intent.addTask', 'test task');
+assert(store.get('state.taskCount') === 1);</code></pre>
+
+  <h2 id="derived-state">Derived State</h2>
+  <p>Computed values are subscribers that write to <code>derived.*</code>:</p>
+  <pre><code>function recomputeDerived() {
+  const tasks = store.get('state.tasks') || [];
+  const filter = store.get('state.filter');
+  store.set('derived.tasks.filtered', filterTasks(tasks, filter));
+}
+
+store.subscribe('state.tasks', recomputeDerived);
+store.subscribe('state.filter', recomputeDerived);
+recomputeDerived(); // initial computation</code></pre>
+  <p>Components read from <code>derived.*</code> — they never compute:</p>
+  <pre><code>const items = usePath('derived.tasks.filtered');</code></pre>
+
+  <h2 id="race-conditions">Race Condition Handling</h2>
+  <p><code>useAsync</code> + <code>store.setAsync</code> auto-aborts previous in-flight requests. This solves the stale-fetch problem that plagues other frameworks:</p>
+  <pre><code>function SearchResults() {
+  const { data, execute } = useAsync('search');
+  const query = usePath('state.searchQuery');
+
+  useEffect(() =&gt; {
+    if (!query) return;
+    // Auto-aborts previous request when query changes
+    execute((signal) =&gt;
+      fetch(`/api/search?q=${query}`, { signal }).then(r =&gt; r.json())
+    );
+  }, [query, execute]);
+
+  return &lt;ul&gt;{data?.map(r =&gt; &lt;li key={r.id}&gt;{r.title}&lt;/li&gt;)}&lt;/ul&gt;;
+}</code></pre>
+  <p>No <code>cancelled</code> boolean. No cleanup function. No stale closures. The store owns the abort lifecycle.</p>
+
+  <h2 id="testing">Testing Without React</h2>
+  <p>Because logic lives in subscribers, you can test the entire app without <code>render()</code> or <code>screen.getByRole()</code>:</p>
+  <pre><code>import { store } from './store.js';
+
+test('adding a task increments taskCount', () =&gt; {
+  const before = store.get('state.taskCount');
+  store.set('intent.addTask', 'test task');
+  expect(store.get('state.taskCount')).toBe(before + 1);
+});
+
+test('filter shows only active tasks', () =&gt; {
+  store.set('intent.addTask', 'task 1');
+  store.set('intent.addTask', 'task 2');
+  store.set('intent.toggleTask', store.get('state.tasks')[0].id);
+  store.set('intent.changeFilter', 'active');
+  expect(store.get('derived.tasks.filtered')).toHaveLength(1);
+});</code></pre>
+
+</main>
+
+</body>
+</html>
