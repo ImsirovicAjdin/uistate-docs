@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@uistate/css — API Reference</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a href="/" class="logo">UIstate</a>
+  <nav>
+    <a href="core.html">Core</a>
+    <a href="css.html" class="active">CSS</a>
+    <a href="event-test.html">Event Test</a>
+  </nav>
+  <div class="header-right">
+    <a href="https://github.com/ImsirovicAjdin/uistate-css">GitHub</a>
+    <a href="https://www.npmjs.com/package/@uistate/css">npm</a>
+  </div>
+</header>
+
+<aside class="sidebar">
+  <h3>Getting Started</h3>
+  <ul>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#overview">Overview</a></li>
+  </ul>
+  <h3>CSS State (v1)</h3>
+  <ul>
+    <li><a href="#createCssState">createCssState</a></li>
+    <li><a href="#setState">setState / getState</a></li>
+    <li><a href="#observe">observe</a></li>
+    <li><a href="#declarative">Declarative Binding</a></li>
+  </ul>
+  <h3>Serializer</h3>
+  <ul>
+    <li><a href="#serializer">createSerializer</a></li>
+  </ul>
+  <h3>Template Manager</h3>
+  <ul>
+    <li><a href="#templateManager">createTemplateManager</a></li>
+  </ul>
+  <h3>Use Cases</h3>
+  <ul>
+    <li><a href="#wordpress">WordPress</a></li>
+    <li><a href="#static-sites">Static Sites</a></li>
+    <li><a href="#web-components">Web Components</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+  <h1>@uistate/css</h1>
+  <p>CSS-native state management using CSS custom properties and data attributes. No bundler, no framework — state lives in CSS and is inspectable in DevTools.</p>
+
+  <h2 id="install">Install</h2>
+  <pre><code>npm install @uistate/css</code></pre>
+
+  <h2 id="overview">Overview</h2>
+  <p><code>@uistate/css</code> stores state directly in CSS custom properties (<code>--key: value</code>) on <code>:root</code> and as <code>data-*</code> attributes on elements. This means:</p>
+  <ul>
+    <li>CSS selectors can react to state: <code>[data-theme="dark"] { ... }</code></li>
+    <li>State is visible in DevTools (Elements → Computed → CSS variables)</li>
+    <li>No JavaScript needed after initial state is set — CSS handles the visual response</li>
+    <li>Custom properties pierce Shadow DOM boundaries</li>
+  </ul>
+
+  <h2 id="createCssState">createCssState(initialState)</h2>
+  <div class="api-sig">createCssState(initial?: object) → cssStateManager</div>
+  <p>Creates a CSS state manager. Call <code>.init()</code> to inject the managed <code>&lt;style&gt;</code> element and apply initial state.</p>
+  <pre><code>import { createCssState } from '@uistate/css';
+
+const ui = createCssState({ theme: 'light', count: 0 });
+ui.init();
+
+// State is now in CSS:
+// :root { --theme: light; --count: 0; }
+// &lt;html data-theme="light" data-count="0"&gt;</code></pre>
+
+  <h2 id="setState">setState / getState</h2>
+  <div class="api-sig">ui.setState(key: string, value: any) → void</div>
+  <div class="api-sig">ui.getState(key: string) → any</div>
+  <pre><code>ui.setState('theme', 'dark');
+// :root now has --theme: dark
+// &lt;html&gt; now has data-theme="dark"
+
+const theme = ui.getState('theme'); // 'dark'</code></pre>
+  <p>Values are serialized to CSS-compatible strings automatically. Objects and arrays are JSON-serialized.</p>
+
+  <h2 id="observe">observe(key, callback)</h2>
+  <div class="api-sig">ui.observe(key: string, callback: (value) → void) → unobserve</div>
+  <p>Watch for state changes. Returns an unobserve function.</p>
+  <pre><code>const unobserve = ui.observe('theme', (value) =&gt; {
+  console.log('Theme changed to:', value);
+});
+
+ui.setState('theme', 'dark'); // logs "Theme changed to: dark"
+unobserve(); // stop watching</code></pre>
+
+  <h2 id="declarative">Declarative Binding</h2>
+  <p>Bind state to the DOM without JavaScript using <code>data-observe</code> and <code>data-state-action</code> attributes.</p>
+  <pre><code>&lt;!-- Auto-updates text content when 'count' changes --&gt;
+&lt;span data-observe="count"&gt;0&lt;/span&gt;
+
+&lt;!-- Sets state on click --&gt;
+&lt;button data-state-action="theme" data-state-value="dark"&gt;Dark Mode&lt;/button&gt;
+&lt;button data-state-action="theme" data-state-value="light"&gt;Light Mode&lt;/button&gt;</code></pre>
+
+  <h2 id="serializer">Serializer</h2>
+  <div class="api-sig">createSerializer(config?: object) → serializer</div>
+  <p>Configurable serialization between JavaScript values and CSS-compatible strings. Three modes:</p>
+  <table>
+    <thead><tr><th>Mode</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>'escape'</code></td><td>Escapes special CSS characters. Best for simple strings.</td></tr>
+      <tr><td><code>'json'</code></td><td>Full JSON serialization. Best for objects/arrays.</td></tr>
+      <tr><td><code>'hybrid'</code></td><td>Strings are escaped, objects are JSON. Default mode.</td></tr>
+    </tbody>
+  </table>
+  <pre><code>import { createSerializer } from '@uistate/css';
+
+const ser = createSerializer({ mode: 'hybrid' });
+ser.serialize('hello world');     // 'hello\\ world'
+ser.serialize({ a: 1 });          // '{"a":1}'
+ser.deserialize('hello\\ world'); // 'hello world'</code></pre>
+
+  <h2 id="templateManager">Template Manager</h2>
+  <div class="api-sig">createTemplateManager(stateManager?) → templateManager</div>
+  <p>Component mounting via <code>&lt;template&gt;</code> elements, event delegation via <code>data-action</code> attributes, and CSS-variable-based templating.</p>
+  <pre><code>import { createCssState, createTemplateManager } from '@uistate/css';
+
+const ui = createCssState({ user: 'Alice' });
+ui.init();
+
+const tm = createTemplateManager(ui);
+
+// Register an action handler
+tm.registerAction('greet', (e) =&gt; {
+  alert(`Hello, ${ui.getState('user')}!`);
+});
+
+// Attach event delegation to a container
+tm.attachDelegation(document.getElementById('app'));</code></pre>
+  <pre><code>&lt;div id="app"&gt;
+  &lt;button data-action="greet"&gt;Say Hello&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+
+  <h2 id="wordpress">WordPress</h2>
+  <p>Drop a <code>&lt;script&gt;</code> tag into your theme. No build step, no React, no webpack. State lives in CSS custom properties that your existing stylesheets can reference.</p>
+  <pre><code>&lt;script type="module"&gt;
+  import { createCssState } from 'https://esm.sh/@uistate/css';
+  const ui = createCssState({ sidebar: 'open', theme: 'light' });
+  ui.init();
+&lt;/script&gt;
+
+&lt;style&gt;
+  [data-sidebar="closed"] .sidebar { display: none; }
+  [data-theme="dark"] { --bg: #1a1a2e; --text: #eee; }
+&lt;/style&gt;</code></pre>
+
+  <h2 id="static-sites">Static Sites (Jekyll, Hugo, 11ty)</h2>
+  <p>Add interactivity to server-rendered HTML. The server provides structure, <code>@uistate/css</code> adds reactive state without a SPA framework.</p>
+
+  <h2 id="web-components">Web Components</h2>
+  <p>CSS custom properties defined on <code>:root</code> cascade into Shadow DOM. This makes <code>@uistate/css</code> a natural theming bridge for web component architectures.</p>
+  <pre><code>// Inside a web component
+connectedCallback() {
+  // Read the global theme token
+  const theme = getComputedStyle(this).getPropertyValue('--theme').trim();
+  this.shadowRoot.innerHTML = `&lt;p&gt;Current theme: ${theme}&lt;/p&gt;`;
+}</code></pre>
+
+</main>
+
+</body>
+</html>

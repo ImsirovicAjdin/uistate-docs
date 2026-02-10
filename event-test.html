@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@uistate/event-test — API Reference</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a href="/" class="logo">UIstate</a>
+  <nav>
+    <a href="core.html">Core</a>
+    <a href="css.html">CSS</a>
+    <a href="event-test.html" class="active">Event Test</a>
+  </nav>
+  <div class="header-right">
+    <a href="https://github.com/ImsirovicAjdin/uistate-event-test">GitHub</a>
+    <a href="https://www.npmjs.com/package/@uistate/event-test">npm</a>
+  </div>
+</header>
+
+<aside class="sidebar">
+  <h3>Getting Started</h3>
+  <ul>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#quick-start">Quick Start</a></li>
+  </ul>
+  <h3>API</h3>
+  <ul>
+    <li><a href="#createEventTest">createEventTest</a></li>
+    <li><a href="#trigger">trigger</a></li>
+    <li><a href="#assertPath">assertPath</a></li>
+    <li><a href="#assertType">assertType</a></li>
+    <li><a href="#assertArrayLength">assertArrayLength</a></li>
+    <li><a href="#assertShape">assertShape</a></li>
+    <li><a href="#assertEventFired">assertEventFired</a></li>
+  </ul>
+  <h3>Test Runner</h3>
+  <ul>
+    <li><a href="#test">test</a></li>
+    <li><a href="#runTests">runTests</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+  <h1>@uistate/event-test</h1>
+  <p>Event-sequence testing for UIstate stores. Trigger state changes and assert values, types, and event firings in a chainable API.</p>
+
+  <h2 id="install">Install</h2>
+  <pre><code>npm install @uistate/event-test @uistate/core</code></pre>
+  <p><code>@uistate/core</code> is a peer dependency.</p>
+
+  <h2 id="license">License</h2>
+  <p><strong>Proprietary.</strong> Free for personal use, open-source projects, and educational use. Commercial use requires a separate license. See <a href="https://github.com/ImsirovicAjdin/uistate-event-test/blob/main/LICENSE.md">LICENSE.md</a> for full terms.</p>
+  <p>Contact: <a href="mailto:ajdika@live.com">ajdika@live.com</a></p>
+
+  <h2 id="quick-start">Quick Start</h2>
+  <pre><code>import { createEventTest, test, runTests } from '@uistate/event-test';
+
+test('counter increments', () =&gt; {
+  const t = createEventTest({ count: 0 });
+
+  t.store.subscribe('intent.increment', () =&gt; {
+    t.store.set('count', t.store.get('count') + 1);
+  });
+
+  t.trigger('intent.increment', true)
+   .assertPath('count', 1)
+   .assertEventFired('count', 1);
+});
+
+runTests();</code></pre>
+
+  <h2 id="createEventTest">createEventTest(initialState)</h2>
+  <div class="api-sig">createEventTest(initial?: object) → eventTest</div>
+  <p>Creates a test harness wrapping a fresh <code>createEventState</code> store. The harness tracks all events fired during the test for assertion.</p>
+  <pre><code>const t = createEventTest({ user: { name: 'Alice' }, items: [] });
+// t.store is the underlying eventState store</code></pre>
+
+  <h2 id="trigger">trigger(path, value)</h2>
+  <div class="api-sig">t.trigger(path: string, value: any) → t (chainable)</div>
+  <p>Set a value on the store and record the event. This is the primary way to drive state changes in tests.</p>
+  <pre><code>t.trigger('intent.addItem', { text: 'Buy milk' })
+ .trigger('intent.addItem', { text: 'Walk dog' });</code></pre>
+
+  <h2 id="assertPath">assertPath(path, expected)</h2>
+  <div class="api-sig">t.assertPath(path: string, expected: any) → t (chainable)</div>
+  <p>Assert that the current value at a path equals the expected value. Uses deep equality for objects/arrays.</p>
+  <pre><code>t.assertPath('count', 1);
+t.assertPath('user.name', 'Alice');</code></pre>
+
+  <h2 id="assertType">assertType(path, type)</h2>
+  <div class="api-sig">t.assertType(path: string, type: string) → t (chainable)</div>
+  <p>Assert the <code>typeof</code> the value at a path.</p>
+  <pre><code>t.assertType('count', 'number');
+t.assertType('user', 'object');
+t.assertType('user.name', 'string');</code></pre>
+
+  <h2 id="assertArrayLength">assertArrayLength(path, length)</h2>
+  <div class="api-sig">t.assertArrayLength(path: string, length: number) → t (chainable)</div>
+  <p>Assert that the value at a path is an array with the expected length.</p>
+  <pre><code>t.assertArrayLength('items', 2);</code></pre>
+
+  <h2 id="assertShape">assertShape(path, shape)</h2>
+  <div class="api-sig">t.assertShape(path: string, shape: object) → t (chainable)</div>
+  <p>Assert that the value at a path contains all keys in the shape object.</p>
+  <pre><code>t.assertShape('user', { name: 'string', email: 'string' });</code></pre>
+
+  <h2 id="assertEventFired">assertEventFired(path, count)</h2>
+  <div class="api-sig">t.assertEventFired(path: string, count: number) → t (chainable)</div>
+  <p>Assert that a specific path was set exactly <code>count</code> times during the test.</p>
+  <pre><code>t.trigger('count', 1)
+ .trigger('count', 2)
+ .assertEventFired('count', 2);</code></pre>
+
+  <h2 id="test">test(name, fn)</h2>
+  <div class="api-sig">test(name: string, fn: () → void) → void</div>
+  <p>Register a named test. Tests are collected and run together with <code>runTests()</code>.</p>
+  <pre><code>test('user updates', () =&gt; {
+  const t = createEventTest({ user: { name: 'Alice' } });
+  t.trigger('user.name', 'Bob')
+   .assertPath('user.name', 'Bob');
+});</code></pre>
+
+  <h2 id="runTests">runTests()</h2>
+  <div class="api-sig">runTests() → void</div>
+  <p>Run all registered tests and log results to the console.</p>
+  <pre><code>runTests();
+// ✅ user updates (2ms)
+// ✅ counter increments (1ms)
+// 2/2 passed</code></pre>
+
+</main>
+
+</body>
+</html>

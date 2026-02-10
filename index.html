@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UIstate — Path-based state management for the web</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a href="/" class="logo">UIstate</a>
+  <nav>
+    <a href="core.html">Core</a>
+    <a href="css.html">CSS</a>
+    <a href="event-test.html">Event Test</a>
+  </nav>
+  <div class="header-right">
+    <a href="https://github.com/ImsirovicAjdin/uistate">GitHub</a>
+    <a href="https://www.npmjs.com/package/@uistate/core">npm</a>
+  </div>
+</header>
+
+<main class="main landing">
+  <div class="hero">
+    <h1>UIstate</h1>
+    <p class="tagline">Path-based state management with wildcard subscriptions, async support, and state-driven CSS.</p>
+    <div class="install">npm install @uistate/core</div>
+    <div class="cta">
+      <a href="core.html" class="primary">Get Started</a>
+      <a href="https://github.com/ImsirovicAjdin/uistate" class="secondary">View Source</a>
+    </div>
+  </div>
+
+  <pre><code>import { createEventState } from '@uistate/core';
+
+const store = createEventState({ count: 0, user: { name: 'Alice' } });
+
+store.subscribe('user.*', ({ path, value }) =&gt; {
+  console.log(`${path} changed to`, value);
+});
+
+store.set('user.name', 'Bob'); // fires subscriber
+store.get('user.name');        // 'Bob'</code></pre>
+
+  <div class="features">
+    <div class="feature-card">
+      <h3>@uistate/core</h3>
+      <p>Reactive store with path-based get/set/subscribe, wildcard listeners, async operations, and query client. ~6 KB, zero dependencies.</p>
+    </div>
+    <div class="feature-card">
+      <h3>@uistate/css</h3>
+      <p>State-driven CSS — write styles as state paths, compile to real CSS rules. Reactive design tokens, typed validation, WCAG contrast enforcement.</p>
+    </div>
+    <div class="feature-card">
+      <h3>@uistate/event-test</h3>
+      <p>Event-sequence testing for UIstate stores. Trigger state changes and assert values, types, and event firings in a chainable API.</p>
+    </div>
+    <div class="feature-card">
+      <h3>@uistate/examples</h3>
+      <p>Working examples: counters, dashboards, async patterns, data tables. Each example is a standalone HTML file.</p>
+    </div>
+  </div>
+
+  <h2>Ecosystem</h2>
+  <table>
+    <thead>
+      <tr><th>Package</th><th>Version</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="core.html">@uistate/core</a></td>
+        <td>5.5.1</td>
+        <td>Event-driven state management</td>
+      </tr>
+      <tr>
+        <td><a href="css.html">@uistate/css</a></td>
+        <td>1.0.0</td>
+        <td>CSS-native state via custom properties</td>
+      </tr>
+      <tr>
+        <td><a href="event-test.html">@uistate/event-test</a></td>
+        <td>1.0.0</td>
+        <td>Event-sequence testing (proprietary license)</td>
+      </tr>
+      <tr>
+        <td><a href="https://www.npmjs.com/package/@uistate/examples">@uistate/examples</a></td>
+        <td>1.0.0</td>
+        <td>Example applications and patterns</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Why UIstate?</h2>
+  <ul>
+    <li><strong>One primitive</strong> — <code>get</code>, <code>set</code>, <code>subscribe</code>. That's the whole API.</li>
+    <li><strong>Path-based</strong> — nested state via dot paths: <code>user.profile.name</code></li>
+    <li><strong>Wildcards</strong> — <code>user.*</code> fires on any child change, <code>*</code> fires on everything</li>
+    <li><strong>Async built-in</strong> — <code>setAsync</code> manages loading/success/error states automatically</li>
+    <li><strong>Framework-free</strong> — works in any browser, with any framework, or with none</li>
+    <li><strong>Zero dependencies</strong> — ~6 KB total, pure JavaScript</li>
+  </ul>
+
+  <h2>License</h2>
+  <p><code>@uistate/core</code> and <code>@uistate/css</code> are MIT licensed. <code>@uistate/event-test</code> has a proprietary license (free for personal/OSS use).</p>
+
+</main>
+
+</body>
+</html>

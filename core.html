@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@uistate/core — API Reference</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a href="/" class="logo">UIstate</a>
+  <nav>
+    <a href="core.html" class="active">Core</a>
+    <a href="css.html">CSS</a>
+    <a href="event-test.html">Event Test</a>
+  </nav>
+  <div class="header-right">
+    <a href="https://github.com/ImsirovicAjdin/uistate">GitHub</a>
+    <a href="https://www.npmjs.com/package/@uistate/core">npm</a>
+  </div>
+</header>
+
+<aside class="sidebar">
+  <h3>Getting Started</h3>
+  <ul>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#quick-start">Quick Start</a></li>
+  </ul>
+  <h3>API</h3>
+  <ul>
+    <li><a href="#createEventState">createEventState</a></li>
+    <li><a href="#get">store.get</a></li>
+    <li><a href="#set">store.set</a></li>
+    <li><a href="#subscribe">store.subscribe</a></li>
+    <li><a href="#setAsync">store.setAsync</a></li>
+    <li><a href="#cancel">store.cancel</a></li>
+    <li><a href="#destroy">store.destroy</a></li>
+  </ul>
+  <h3>Query Client</h3>
+  <ul>
+    <li><a href="#query-client">createQueryClient</a></li>
+    <li><a href="#qc-query">qc.query</a></li>
+    <li><a href="#qc-subscribe">qc.subscribe</a></li>
+    <li><a href="#qc-getdata">qc.getData / getStatus / getError</a></li>
+    <li><a href="#qc-cancel">qc.cancel / invalidate</a></li>
+  </ul>
+  <h3>Patterns</h3>
+  <ul>
+    <li><a href="#wildcards">Wildcards</a></li>
+    <li><a href="#async-patterns">Async Patterns</a></li>
+  </ul>
+</aside>
+
+<main class="main">
+
+  <h1>@uistate/core</h1>
+  <p>Path-based state management with wildcard subscriptions and async support. ~6 KB, zero dependencies.</p>
+
+  <h2 id="install">Install</h2>
+  <pre><code>npm install @uistate/core</code></pre>
+
+  <h2 id="quick-start">Quick Start</h2>
+  <pre><code>import { createEventState } from '@uistate/core';
+
+const store = createEventState({ count: 0, user: { name: 'Alice' } });
+
+// Subscribe to a path
+const unsub = store.subscribe('count', (value) =&gt; {
+  console.log('Count:', value);
+});
+
+// Update state
+store.set('count', 1);       // logs "Count: 1"
+store.get('count');           // 1
+
+// Cleanup
+unsub();</code></pre>
+
+  <h2 id="createEventState">createEventState(initialState)</h2>
+  <div class="api-sig">createEventState(initial?: object) → store</div>
+  <p>Creates a new reactive store. The initial state is deep-cloned.</p>
+  <pre><code>const store = createEventState({ count: 0 });
+const empty = createEventState(); // empty store, add paths later</code></pre>
+
+  <h2 id="get">store.get(path?)</h2>
+  <div class="api-sig">store.get(path?: string) → any</div>
+  <p>Retrieve a value by dot-separated path. Returns the entire state if no path is provided. Returns <code>undefined</code> for non-existent paths (no errors).</p>
+  <pre><code>store.get('user.name');     // 'Alice'
+store.get('user');          // { name: 'Alice' }
+store.get();                // entire state object
+store.get('no.such.path');  // undefined</code></pre>
+
+  <h2 id="set">store.set(path, value)</h2>
+  <div class="api-sig">store.set(path: string, value: any) → value</div>
+  <p>Set a value at a path and notify all matching subscribers. Creates intermediate objects if they don't exist. Returns the value that was set.</p>
+  <pre><code>store.set('count', 42);
+store.set('user.email', 'alice@example.com'); // creates 'email' key on user
+store.set('deep.nested.path', true);          // creates deep, deep.nested</code></pre>
+
+  <h3>Notification order</h3>
+  <p>When you call <code>store.set('user.name', 'Bob')</code>, subscribers fire in this order:</p>
+  <ol>
+    <li><strong>Exact</strong> — subscribers on <code>'user.name'</code></li>
+    <li><strong>Wildcard</strong> — subscribers on <code>'user.*'</code></li>
+    <li><strong>Global</strong> — subscribers on <code>'*'</code></li>
+  </ol>
+
+  <h2 id="subscribe">store.subscribe(path, handler)</h2>
+  <div class="api-sig">store.subscribe(path: string, handler: Function) → unsubscribe</div>
+  <p>Subscribe to changes at a path. Returns a function that removes the subscription.</p>
+
+  <h3>Exact path subscribers</h3>
+  <p>Handler receives <code>(value, detail)</code> where <code>detail</code> is <code>{ path, value, oldValue }</code>.</p>
+  <pre><code>store.subscribe('count', (value, { oldValue }) =&gt; {
+  console.log(`${oldValue} → ${value}`);
+});</code></pre>
+
+  <h3>Wildcard subscribers</h3>
+  <p>Handler receives <code>(detail)</code> where <code>detail</code> is <code>{ path, value, oldValue }</code>.</p>
+  <pre><code>store.subscribe('user.*', ({ path, value }) =&gt; {
+  console.log(`${path} changed to`, value);
+});
+
+// Fires when any direct child of 'user' changes:
+store.set('user.name', 'Bob');   // fires
+store.set('user.email', 'x');    // fires
+store.set('count', 1);           // does NOT fire</code></pre>
+
+  <h3>Global subscribers</h3>
+  <pre><code>store.subscribe('*', ({ path, value }) =&gt; {
+  console.log(`[state] ${path} =`, value);
+});
+// Fires on every set() call — useful for logging/telemetry</code></pre>
+
+  <h2 id="setAsync">store.setAsync(path, fetcher)</h2>
+  <div class="api-sig">store.setAsync(path: string, fetcher: (signal: AbortSignal) → Promise) → Promise</div>
+  <p>Run an async operation with automatic status tracking. Manages three sub-paths:</p>
+  <table>
+    <thead><tr><th>Sub-path</th><th>Values</th></tr></thead>
+    <tbody>
+      <tr><td><code>${path}.status</code></td><td><code>'loading'</code> → <code>'success'</code> | <code>'error'</code> | <code>'cancelled'</code></td></tr>
+      <tr><td><code>${path}.data</code></td><td>The resolved value</td></tr>
+      <tr><td><code>${path}.error</code></td><td>Error message string, or <code>null</code></td></tr>
+    </tbody>
+  </table>
+  <pre><code>await store.setAsync('users', async (signal) =&gt; {
+  const res = await fetch('/api/users', { signal });
+  return res.json();
+});
+
+store.get('users.status'); // 'success'
+store.get('users.data');   // [...]</code></pre>
+
+  <p>If <code>setAsync</code> is called again on the same path while a previous call is still in-flight, the previous call is automatically aborted.</p>
+
+  <h2 id="cancel">store.cancel(path)</h2>
+  <div class="api-sig">store.cancel(path: string) → void</div>
+  <p>Abort an in-flight <code>setAsync</code> operation. Sets status to <code>'cancelled'</code>.</p>
+  <pre><code>store.setAsync('users', fetcher); // starts loading
+store.cancel('users');            // aborts, status → 'cancelled'</code></pre>
+
+  <h2 id="destroy">store.destroy()</h2>
+  <div class="api-sig">store.destroy() → void</div>
+  <p>Tear down the store. Aborts all in-flight async operations, clears all subscriptions. Any further calls to <code>get</code>, <code>set</code>, or <code>subscribe</code> will throw.</p>
+
+  <h2 id="query-client">Query Client</h2>
+  <p>A convenience wrapper around <code>setAsync</code> for data-fetching patterns. Uses the <code>query.${key}</code> namespace internally.</p>
+  <pre><code>import { createEventState } from '@uistate/core';
+import { createQueryClient } from '@uistate/core/query';
+
+const store = createEventState();
+const qc = createQueryClient(store);</code></pre>
+
+  <h3 id="qc-query">qc.query(key, fetcher)</h3>
+  <pre><code>await qc.query('users', async (signal) =&gt; {
+  const res = await fetch('/api/users', { signal });
+  return res.json();
+});</code></pre>
+
+  <h3 id="qc-subscribe">qc.subscribe(key, cb) / subscribeToStatus / subscribeToError</h3>
+  <pre><code>qc.subscribe('users', (data) =&gt; renderUsers(data));
+qc.subscribeToStatus('users', (status) =&gt; showSpinner(status === 'loading'));
+qc.subscribeToError('users', (err) =&gt; showError(err));</code></pre>
+
+  <h3 id="qc-getdata">qc.getData / getStatus / getError</h3>
+  <pre><code>qc.getData('users');    // [...] or undefined
+qc.getStatus('users');  // 'success' | 'loading' | 'error' | 'idle'
+qc.getError('users');   // null or error message</code></pre>
+
+  <h3 id="qc-cancel">qc.cancel(key) / qc.invalidate(key)</h3>
+  <pre><code>qc.cancel('users');     // abort in-flight request
+qc.invalidate('users'); // reset data, status, error to null/idle</code></pre>
+
+  <h2 id="wildcards">Wildcard Patterns</h2>
+  <p>When <code>store.set('user.profile.name', 'Bob')</code> is called, these subscribers fire:</p>
+  <table>
+    <thead><tr><th>Subscription</th><th>Fires?</th><th>Handler args</th></tr></thead>
+    <tbody>
+      <tr><td><code>'user.profile.name'</code></td><td>Yes</td><td><code>(value, detail)</code></td></tr>
+      <tr><td><code>'user.profile.*'</code></td><td>Yes</td><td><code>(detail)</code></td></tr>
+      <tr><td><code>'user.*'</code></td><td>Yes</td><td><code>(detail)</code></td></tr>
+      <tr><td><code>'*'</code></td><td>Yes</td><td><code>(detail)</code></td></tr>
+      <tr><td><code>'user.profile'</code></td><td>No</td><td>—</td></tr>
+      <tr><td><code>'user'</code></td><td>No</td><td>—</td></tr>
+    </tbody>
+  </table>
+  <p>Wildcards match on <strong>parent paths</strong>, not the exact path being set. This mirrors how DOM event bubbling works.</p>
+
+  <h2 id="async-patterns">Async Patterns</h2>
+  <h3>Loading indicator</h3>
+  <pre><code>store.subscribe('users.status', (status) =&gt; {
+  spinner.hidden = status !== 'loading';
+});
+
+store.setAsync('users', fetchUsers);</code></pre>
+
+  <h3>Race condition handling</h3>
+  <pre><code>// User types fast — each keystroke triggers a search
+input.addEventListener('input', () =&gt; {
+  // setAsync auto-aborts the previous in-flight request
+  store.setAsync('search', (signal) =&gt;
+    fetch(`/api/search?q=${input.value}`, { signal }).then(r =&gt; r.json())
+  );
+});</code></pre>
+
+  <h3>Error handling</h3>
+  <pre><code>try {
+  await store.setAsync('users', fetchUsers);
+} catch (err) {
+  if (err.name === 'AbortError') return; // cancelled, ignore
+  console.error('Fetch failed:', err);
+}
+// Or subscribe to the error path:
+store.subscribe('users.error', (msg) =&gt; {
+  if (msg) showToast(`Error: ${msg}`);
+});</code></pre>
+
+</main>
+
+</body>
+</html>
