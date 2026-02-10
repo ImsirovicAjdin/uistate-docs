@@ -17,19 +17,25 @@
   --header-height: 56px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f172a;
-    --bg-secondary: #1e293b;
-    --text: #e2e8f0;
-    --text-muted: #94a3b8;
-    --border: #334155;
-    --accent: #60a5fa;
-    --accent-hover: #93bbfd;
-    --code-bg: #1e293b;
-    --code-block-bg: #020617;
-    --code-block-text: #e2e8f0;
-  }
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --bg-secondary: #1e293b;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --accent: #60a5fa;
+  --accent-hover: #93bbfd;
+  --code-bg: #1e293b;
+  --code-block-bg: #020617;
+  --code-block-text: #e2e8f0;
+}
+
+/* Smooth transition only on intentional toggle — not on page load */
+.theme-transitioning,
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition: background 0.3s ease, color 0.2s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
 }
 
 /* Reset */
@@ -96,6 +102,28 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .header-right a {
   font-size: 0.85rem;
   color: var(--text-muted);
+}
+
+/* Theme toggle button */
+#theme-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+
+#theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 /* ---- Sidebar ---- */
