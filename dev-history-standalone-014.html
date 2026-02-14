@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dev History Viewer — 014 Your First Stylesheet (Standalone)</title>
+  <style>
+    /* ── Theme variables (dark default) ── */
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #1a1f35;
+      --text-primary: #f8fafc;
+      --text-secondary: #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --text-faint: #475569;
+      --border: #334155;
+      --border-light: #1e293b;
+      --accent: #6366f1;
+      --accent-bg: rgba(99,102,241,0.12);
+      --accent-bg-subtle: rgba(99,102,241,0.06);
+      --accent-bg-mid: rgba(99,102,241,0.15);
+      --accent-bg-strong: rgba(99,102,241,0.3);
+      --accent-text: #a5b4fc;
+      --accent-border: rgba(99,102,241,0.3);
+      --green: #34d399;
+      --green-bg: rgba(52,211,153,0.1);
+      --green-bg-mid: rgba(16,185,129,0.15);
+      --green-bg-strong: rgba(16,185,129,0.3);
+      --green-border: rgba(16,185,129,0.3);
+      --green-text: #34d399;
+      --yellow: #fbbf24;
+      --red: #f87171;
+      --red-bg: rgba(248,113,113,0.1);
+      --rose: #fb7185;
+      --rose-bg: rgba(244,63,94,0.15);
+      --btn-bg: #334155;
+      --btn-border: #475569;
+      --btn-hover: #475569;
+      --code-ln: #334155;
+      --shadow-mobile: rgba(0,0,0,0.4);
+    }
+    [data-theme="light"] {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #e2e8f0;
+      --bg-tertiary: #eff3f8;
+      --text-primary: #0f172a;
+      --text-secondary: #1e293b;
+      --text-muted: #475569;
+      --text-dim: #64748b;
+      --text-faint: #94a3b8;
+      --border: #cbd5e1;
+      --border-light: #e2e8f0;
+      --accent: #4f46e5;
+      --accent-bg: rgba(79,70,229,0.1);
+      --accent-bg-subtle: rgba(79,70,229,0.05);
+      --accent-bg-mid: rgba(79,70,229,0.12);
+      --accent-bg-strong: rgba(79,70,229,0.2);
+      --accent-text: #4338ca;
+      --accent-border: rgba(79,70,229,0.25);
+      --green: #059669;
+      --green-bg: rgba(5,150,105,0.08);
+      --green-bg-mid: rgba(5,150,105,0.12);
+      --green-bg-strong: rgba(5,150,105,0.2);
+      --green-border: rgba(5,150,105,0.25);
+      --green-text: #059669;
+      --yellow: #d97706;
+      --red: #dc2626;
+      --red-bg: rgba(220,38,38,0.08);
+      --rose: #e11d48;
+      --rose-bg: rgba(225,29,72,0.1);
+      --btn-bg: #e2e8f0;
+      --btn-border: #cbd5e1;
+      --btn-hover: #cbd5e1;
+      --code-ln: #94a3b8;
+      --shadow-mobile: rgba(0,0,0,0.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg-primary); color: var(--text-secondary);
+      display: flex; flex-direction: column; height: 100vh;
+    }
+
+    /* ── Header ── */
+    .top-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 16px; background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+    .top-bar h1 { font-size: 16px; font-weight: 800; color: var(--text-primary); white-space: nowrap; }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 8px;
+      font-size: 10px; font-weight: 700; color: #fff;
+    }
+    .badge.purple { background: #6366f1; }
+    .badge.green  { background: #10b981; }
+    .badge.amber  { background: #f59e0b; color: #1c1917; }
+    .badge.blue   { background: #3b82f6; }
+    .badge.rose   { background: #f43f5e; }
+    .top-bar .spacer { flex: 1; }
+    .top-bar .step-label {
+      font-size: 13px; color: var(--text-muted); font-weight: 600;
+    }
+
+    /* ── Timeline ── */
+    .timeline-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 16px; background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+    .timeline-bar .tl-label { font-size: 11px; color: var(--text-dim); font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+    .timeline-bar input[type=range] { flex: 1; accent-color: var(--accent); }
+    .timeline-bar .tl-info { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; min-width: 60px; text-align: right; }
+    .timeline-bar button {
+      padding: 4px 10px; background: var(--btn-bg); color: var(--text-secondary);
+      border: 1px solid var(--btn-border); border-radius: 5px; font-size: 12px;
+      cursor: pointer; font-weight: 600;
+    }
+    .timeline-bar button:hover { background: var(--btn-hover); }
+    .timeline-bar button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* ── Step info strip ── */
+    .commit-strip {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 16px; background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-light); font-size: 12px;
+      overflow: hidden;
+    }
+    .commit-sha {
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      color: var(--accent); font-weight: 700; font-size: 13px;
+      background: var(--accent-bg); padding: 2px 8px;
+      border-radius: 4px; white-space: nowrap;
+    }
+    .commit-msg { color: var(--text-primary); font-weight: 700; font-size: 14px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ── Explanation panel ── */
+    .explain-strip {
+      padding: 10px 16px; background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px; line-height: 1.5; color: var(--text-muted);
+    }
+    .explain-strip strong { color: var(--accent-text); }
+    .explain-strip code {
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      background: var(--accent-bg-mid); padding: 1px 5px;
+      border-radius: 3px; font-size: 12px; color: var(--accent-text);
+    }
+
+    /* ── Main layout ── */
+    .main { flex: 1; display: flex; overflow: hidden; position: relative; }
+
+    /* ── File tree (left sidebar) ── */
+    .file-tree {
+      width: 200px; min-width: 160px; background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+    }
+    .file-tree-header {
+      padding: 8px 12px; font-size: 11px; font-weight: 700;
+      color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .file-tree-header .count { color: var(--text-muted); }
+    .file-tree-list { flex: 1; overflow-y: auto; padding: 4px 0; }
+    .file-entry {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 12px; font-size: 12px; cursor: pointer;
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      color: var(--text-muted); border-left: 3px solid transparent;
+    }
+    .file-entry:hover { background: var(--accent-bg-subtle); color: var(--text-secondary); }
+    .file-entry.selected { background: var(--accent-bg-mid); color: var(--text-primary); border-left-color: var(--accent); }
+    .file-entry.added { color: var(--green); }
+    .file-entry.modified { color: var(--yellow); }
+    .file-entry .file-icon { font-size: 14px; width: 16px; text-align: center; }
+
+    /* ── Content area (center) ── */
+    .content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .content-header {
+      padding: 6px 16px; background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px; font-size: 12px;
+    }
+    .content-header .filepath {
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      color: var(--text-secondary); font-weight: 600;
+    }
+    .content-header .file-meta { color: var(--text-faint); margin-left: auto; }
+    .content-tabs { display: flex; gap: 0; }
+    .content-tab {
+      padding: 4px 14px; font-size: 11px; font-weight: 700;
+      color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent;
+      text-transform: uppercase;
+    }
+    .content-tab:hover { color: var(--text-muted); }
+    .content-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .content-body { flex: 1; overflow: auto; background: var(--bg-primary); display: flex; flex-direction: column; }
+
+    /* ── Code view ── */
+    .code-view {
+      padding-top: 6px; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 13px; line-height: 0.65; white-space: pre;
+    }
+    .code-line { display: block; padding: 0 16px 0 0; }
+    .code-line:hover { background: var(--accent-bg-subtle); }
+    .code-line .ln {
+      display: inline-block; width: 40px; text-align: right;
+      color: var(--code-ln); padding-right: 12px; user-select: none;
+      border-right: 1px solid var(--border-light); margin-right: 12px;
+    }
+
+    /* ── Diff view ── */
+    .diff-line { display: block; padding: 0 16px 0 0; }
+    .diff-line .ln {
+      display: inline-block; width: 40px; text-align: right;
+      color: var(--code-ln); padding-right: 12px; user-select: none;
+      border-right: 1px solid var(--border-light); margin-right: 12px;
+    }
+    .diff-line.added-line { background: var(--green-bg); }
+    .diff-line.added-line .ln { color: var(--green); }
+    .diff-line.removed-line { background: var(--red-bg); }
+    .diff-line.removed-line .ln { color: var(--red); }
+    .diff-line .diff-marker { color: var(--text-faint); font-weight: 700; width: 14px; display: inline-block; }
+    .diff-line.added-line .diff-marker { color: var(--green); }
+    .diff-line.removed-line .diff-marker { color: var(--red); }
+
+    /* ── Right sidebar ── */
+    .right-sidebar {
+      width: 280px; min-width: 220px; background: var(--bg-secondary);
+      border-left: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── TOC (top right) ── */
+    .toc-panel {
+      flex: 1; display: flex; flex-direction: column;
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .toc-header {
+      padding: 8px 12px; font-size: 11px; font-weight: 700;
+      color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 6px;
+      flex-shrink: 0;
+    }
+    .toc-header .toc-icon { font-size: 13px; }
+    .toc-list {
+      flex: 1; overflow-y: auto; padding: 4px 0;
+    }
+    .toc-entry {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 5px 12px; font-size: 12px; cursor: pointer;
+      color: var(--text-dim); border-left: 3px solid transparent;
+      transition: all 0.12s;
+    }
+    .toc-entry:hover { background: var(--accent-bg-subtle); color: var(--text-muted); }
+    .toc-entry.current {
+      background: var(--accent-bg); color: var(--text-primary);
+      border-left-color: var(--accent); font-weight: 600;
+    }
+    .toc-entry.completed { color: var(--text-muted); }
+    .toc-entry.completed .toc-check { color: var(--green); }
+    .toc-entry .toc-num {
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      font-size: 10px; font-weight: 700; min-width: 18px;
+      color: var(--text-faint); flex-shrink: 0; padding-top: 1px;
+    }
+    .toc-entry.current .toc-num { color: var(--accent-text); }
+    .toc-entry .toc-check {
+      font-size: 11px; min-width: 14px; flex-shrink: 0; padding-top: 1px;
+    }
+    .toc-entry .toc-title { line-height: 1.3; }
+
+    /* ── Exercises (bottom right) ── */
+    .exercises-panel {
+      flex-shrink: 0; max-height: 40%; display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .exercises-header {
+      padding: 8px 12px; font-size: 11px; font-weight: 700;
+      color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 6px;
+      flex-shrink: 0;
+    }
+    .exercises-header .ex-icon { font-size: 13px; }
+    .exercises-list {
+      flex: 1; overflow-y: auto; padding: 4px 0;
+    }
+    .exercise-entry {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 6px 12px; font-size: 12px; cursor: pointer;
+      color: var(--text-dim); border-left: 3px solid transparent;
+      transition: all 0.12s;
+    }
+    .exercise-entry:hover { background: var(--accent-bg-subtle); color: var(--text-muted); }
+    .exercise-entry.active-exercise {
+      background: var(--green-bg); color: var(--green-text);
+      border-left-color: var(--green); font-weight: 600;
+    }
+    .exercise-entry .ex-num {
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      font-size: 10px; font-weight: 700; min-width: 18px;
+      color: var(--text-faint); flex-shrink: 0; padding-top: 1px;
+    }
+    .exercise-entry.active-exercise .ex-num { color: var(--green-text); }
+    .exercise-entry .ex-title { line-height: 1.3; }
+    .exercise-entry .ex-badge {
+      font-size: 9px; padding: 1px 5px; border-radius: 4px;
+      font-weight: 700; margin-left: auto; flex-shrink: 0;
+    }
+    .ex-badge.beginner { background: var(--green-bg-mid); color: var(--green-text); }
+    .ex-badge.intermediate { background: var(--accent-bg-mid); color: var(--accent-text); }
+    .ex-badge.advanced { background: var(--rose-bg); color: var(--rose); }
+
+    /* ── Copy button ── */
+    .copy-btn {
+      margin-left: auto; padding: 3px 10px; font-size: 11px;
+      background: var(--accent-bg-mid); color: var(--accent-text); border: 1px solid var(--accent-border);
+      border-radius: 4px; cursor: pointer; font-weight: 600;
+      transition: all 0.15s; display: flex; align-items: center; gap: 4px;
+      flex-shrink: 0;
+    }
+    .copy-btn:hover { background: var(--accent-bg-strong); }
+    .copy-btn.copied { background: var(--green-bg-mid); color: var(--green-text); border-color: var(--green-border); }
+
+    /* ── Live preview iframe ── */
+    .live-preview-wrap {
+      flex: 1; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .live-preview-wrap iframe {
+      flex: 1; border: none; background: #fff; border-radius: 4px;
+      margin: 8px; box-shadow: 0 0 0 1px var(--accent-border);
+    }
+    .live-preview-wrap .live-label {
+      padding: 4px 12px; font-size: 10px; color: var(--text-dim);
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+    .content-tab.live-indicator { position: relative; }
+    .content-tab.live-indicator::after {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green); display: inline-block; margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    /* ── Standalone badge ── */
+    .badge.standalone {
+      background: linear-gradient(135deg, #f59e0b, #f43f5e);
+      color: #fff; font-size: 9px; letter-spacing: 0.04em;
+    }
+
+    /* ── Stats panel ── */
+    .stats-strip {
+      display: flex; gap: 16px; padding: 6px 16px;
+      background: var(--bg-secondary); border-top: 1px solid var(--border);
+      font-size: 11px; color: var(--text-faint);
+    }
+    .stats-strip .sv { color: var(--text-secondary); font-weight: 700; }
+
+    /* ── Welcome ── */
+    .welcome {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 8px; color: var(--text-faint);
+    }
+    .welcome h2 { color: var(--text-dim); font-size: 16px; }
+    .welcome p { font-size: 13px; }
+
+    /* ── Copy All & Print buttons ── */
+    .copy-all-btn {
+      padding: 3px 10px; font-size: 11px;
+      background: var(--green-bg-mid); color: var(--green-text); border: 1px solid var(--green-border);
+      border-radius: 4px; cursor: pointer; font-weight: 600;
+      transition: all 0.15s; flex-shrink: 0;
+    }
+    .copy-all-btn:hover { background: var(--green-bg-strong); }
+    .copy-all-btn.copied { background: var(--green-bg-strong); color: var(--green); }
+    .print-btn {
+      padding: 4px 10px; background: var(--btn-bg); color: var(--text-muted);
+      border: 1px solid var(--btn-border); border-radius: 5px; font-size: 11px;
+      cursor: pointer; font-weight: 600; white-space: nowrap;
+    }
+    .print-btn:hover { background: var(--btn-hover); color: var(--text-secondary); }
+    .stack-select {
+      padding: 4px 8px; background: var(--btn-bg); color: var(--text-secondary);
+      border: 1px solid var(--btn-border); border-radius: 5px; font-size: 11px;
+      font-weight: 600; cursor: pointer; appearance: auto;
+    }
+    .stack-select:hover { background: var(--btn-hover); }
+    .stack-group-header {
+      padding: 6px 12px; font-size: 10px; font-weight: 700;
+      color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;
+      background: var(--accent-bg-subtle); border-bottom: 1px solid var(--border);
+      margin-top: 4px; cursor: pointer; display: flex; align-items: center;
+      user-select: none;
+    }
+    .stack-group-header:first-child { margin-top: 0; }
+    .stack-group-header::before {
+      content: '\25B6'; font-size: 7px; margin-right: 6px;
+      transition: transform 0.2s; display: inline-block;
+    }
+    .stack-group-header.expanded::before { transform: rotate(90deg); }
+    .stack-group-body {
+      max-height: 0; overflow: hidden; transition: max-height 0.25s ease;
+    }
+    .stack-group-body.expanded { max-height: 500px; }
+
+    /* ── Print mode ── */
+    @media print {
+      body { height: auto; overflow: visible; background: #fff; color: #000; }
+      .timeline-bar, .stats-strip, .right-sidebar, .file-tree,
+      .content-header, .top-bar .badge.standalone, .print-btn,
+      .commit-strip, .explain-strip, .main { display: none !important; }
+      .top-bar { background: #fff; border-bottom: 2px solid #000; padding: 8px 0; }
+      .top-bar h1 { color: #000; }
+      .top-bar .badge { display: none; }
+      .top-bar .step-label { color: #333; }
+      .print-all-view { display: block !important; }
+    }
+    .print-all-view {
+      display: none; padding: 20px;
+    }
+    .print-all-view .print-step {
+      page-break-inside: avoid; margin-bottom: 24px;
+      border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+    }
+    .print-all-view .print-step-header {
+      background: var(--bg-secondary); padding: 8px 12px;
+      font-weight: 700; font-size: 13px; color: var(--text-secondary);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .print-all-view .print-step-header .pnum {
+      background: var(--accent); color: #fff; padding: 2px 8px;
+      border-radius: 4px; font-size: 11px; font-family: monospace;
+    }
+    .print-all-view .print-step-explain {
+      padding: 8px 12px; font-size: 12px; color: var(--text-muted);
+      background: var(--bg-tertiary); border-bottom: 1px solid var(--border); line-height: 1.5;
+    }
+    .print-all-view .print-step-code {
+      padding: 8px 0; font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; white-space: pre; line-height: 1.4;
+      background: var(--bg-primary); color: var(--text-secondary);
+    }
+    .print-all-view .print-step-code .pln {
+      display: inline-block; width: 32px; text-align: right;
+      color: var(--text-faint); padding-right: 8px; margin-right: 8px;
+      border-right: 1px solid var(--border-light); user-select: none;
+    }
+    @media print {
+      .print-all-view .print-step { border-color: #ccc; }
+      .print-all-view .print-step-header { background: #f0f0f0; color: #000; }
+      .print-all-view .print-step-header .pnum { background: #333; }
+      .print-all-view .print-step-explain { background: #fafafa; color: #333; border-color: #ddd; }
+      .print-all-view .print-step-code { background: #fff; color: #000; }
+      .print-all-view .print-step-code .pln { color: #999; border-right-color: #ccc; }
+    }
+
+    /* ── Mobile toggle buttons ── */
+    .mobile-toggle {
+      display: none; padding: 4px 8px; background: var(--btn-bg); color: var(--text-muted);
+      border: 1px solid var(--btn-border); border-radius: 5px; font-size: 12px;
+      cursor: pointer; font-weight: 600; white-space: nowrap;
+    }
+    .mobile-toggle:hover { background: var(--btn-hover); color: var(--text-secondary); }
+    .mobile-toggle.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* ── Mobile responsive ── */
+    @media (max-width: 900px) {
+      .right-sidebar {
+        display: none; position: absolute; right: 0; top: 0; bottom: 0;
+        z-index: 50; box-shadow: -4px 0 20px var(--shadow-mobile);
+      }
+      .right-sidebar.mobile-open { display: flex; }
+      .mobile-toggle.tgl-sidebar { display: inline-block; }
+    }
+    @media (max-width: 700px) {
+      .file-tree {
+        display: none; position: absolute; left: 0; top: 0; bottom: 0;
+        z-index: 50; box-shadow: 4px 0 20px var(--shadow-mobile);
+      }
+      .file-tree.mobile-open { display: flex; }
+      .mobile-toggle.tgl-files { display: inline-block; }
+      .top-bar h1 { font-size: 13px; }
+      .top-bar .badge { display: none; }
+      .top-bar .badge.blue { display: inline-block; }
+      .timeline-bar { flex-wrap: wrap; gap: 6px; padding: 6px 10px; }
+      .timeline-bar input[type=range] { width: 100%; order: 10; }
+      .commit-strip { flex-wrap: wrap; }
+      .explain-strip { font-size: 12px; }
+      .content-header { flex-wrap: wrap; gap: 6px; }
+      .stats-strip { flex-wrap: wrap; gap: 8px; font-size: 10px; }
+    }
+
+    /* ── Theme toggle ── */
+    .theme-toggle {
+      padding: 4px 10px; background: var(--btn-bg); color: var(--text-muted);
+      border: 1px solid var(--btn-border); border-radius: 5px; font-size: 11px;
+      cursor: pointer; font-weight: 600; white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+    }
+    .theme-toggle:hover { background: var(--btn-hover); color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>📖 Dev History Viewer</h1>
+  <span class="badge purple">eventState</span>
+  <span class="badge green">tutorial</span>
+  <span class="badge blue" id="exerciseLabel">014 Your First Stylesheet</span>
+  <span class="badge standalone">STANDALONE</span>
+  <div class="spacer"></div>
+  <select class="stack-select" id="stackSelect"></select>
+  <button class="theme-toggle" id="themeToggle">🌙 Dark</button>
+  <button class="print-btn" id="btnPrint">🖨 Print All</button>
+  <span class="step-label" id="stepLabel">Step 0 / 0</span>
+</div>
+
+<!-- Timeline -->
+<div class="timeline-bar">
+  <span class="tl-label">Step:</span>
+  <button id="btnFirst">⏮</button>
+  <button id="btnPrev">◀</button>
+  <button id="btnPlay">▶ Play</button>
+  <button id="btnNext">▶</button>
+  <button id="btnLast">⏭</button>
+  <input type="range" id="scrubber" min="0" max="0" value="0" />
+  <span class="tl-info" id="scrubInfo">0 / 0</span>
+  <button class="mobile-toggle tgl-files" id="tglFiles">📂 Files</button>
+  <button class="mobile-toggle tgl-sidebar" id="tglSidebar">📋 TOC</button>
+</div>
+
+<!-- Step info -->
+<div class="commit-strip">
+  <span class="commit-sha" id="stepNum">Step 0</span>
+  <span class="commit-msg" id="stepTitle">—</span>
+  <span id="diffBadges"></span>
+</div>
+
+<!-- Explanation -->
+<div class="explain-strip" id="explainStrip">
+  Select a step to see the explanation.
+</div>
+
+<div class="main">
+  <!-- File tree (left) -->
+  <div class="file-tree">
+    <div class="file-tree-header">
+      Files <span class="count" id="fileCount">0</span>
+    </div>
+    <div class="file-tree-list" id="fileTree"></div>
+  </div>
+
+  <!-- Content (center) -->
+  <div class="content-area">
+    <div class="content-header" id="contentHeader" style="display:none;">
+      <div class="content-tabs">
+        <div class="content-tab active" id="tabSource" data-tab="source">Source</div>
+        <div class="content-tab" id="tabDiff" data-tab="diff">Diff</div>
+        <div class="content-tab" id="tabLive" data-tab="live">Live</div>
+      </div>
+      <span class="filepath" id="selectedFilePath"></span>
+      <span class="file-meta" id="fileMeta"></span>
+      <button class="copy-btn" id="copyBtn" title="Copy file source to clipboard">📋 Copy</button>
+      <button class="copy-all-btn" id="copyAllBtn" title="Copy all files at this step">📦 Copy All</button>
+    </div>
+    <div class="content-body" id="contentBody">
+      <div class="welcome">
+        <h2>Select a file from the tree</h2>
+        <p>Step through the timeline to see how the app is built</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right sidebar -->
+  <div class="right-sidebar">
+    <!-- TOC (top) -->
+    <div class="toc-panel">
+      <div class="toc-header">
+        <span class="toc-icon">📋</span> Steps
+      </div>
+      <div class="toc-list" id="tocList"></div>
+    </div>
+
+    <!-- Exercises (bottom) -->
+    <div class="exercises-panel">
+      <div class="exercises-header">
+        <span class="ex-icon">🧪</span> Exercises
+      </div>
+      <div class="exercises-list" id="exercisesList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="print-all-view" id="printAllView"></div>
+
+<div class="stats-strip">
+  <span>Steps: <span class="sv" id="statSteps">0</span></span>
+  <span>Files: <span class="sv" id="statFiles">0</span></span>
+  <span>Added: <span class="sv" style="color:var(--green);" id="statAdded">0</span></span>
+  <span>Modified: <span class="sv" style="color:var(--yellow);" id="statModified">0</span></span>
+  <span style="margin-left:auto; color:var(--yellow); font-weight:700;">⚡ Zero dependencies — eventState embedded</span>
+  <a href="https://uistate.com" target="_blank" style="color:var(--text-faint); text-decoration:none; font-size:11px; margin-left:12px; display:flex; align-items:center; gap:4px;">🏠 uistate.com</a>
+</div>
+
+<script>
+  // ═══════════════════════════════════════════════
+  // EMBEDDED eventState v2 — the ENTIRE library
+  // No imports. No CDN. No npm. Just 100 lines of JS.
+  // ═══════════════════════════════════════════════
+
+  function createEventState(initial = {}) {
+    const state = JSON.parse(JSON.stringify(initial));
+    const listeners = new Map();
+    let destroyed = false;
+
+    return {
+      get(path) {
+        if (destroyed) throw new Error('Cannot get from destroyed store');
+        if (!path) return state;
+        return path.split(".").reduce((obj, key) => obj?.[key], state);
+      },
+
+      set(path, value) {
+        if (destroyed) throw new Error('Cannot set on destroyed store');
+        if (!path) return value;
+
+        const parts = path.split(".");
+        const key = parts.pop();
+        let cur = state;
+
+        for (const p of parts) {
+          if (!cur[p]) cur[p] = {};
+          cur = cur[p];
+        }
+
+        const oldValue = cur[key];
+        cur[key] = value;
+
+        if (!destroyed) {
+          const detail = { path, value, oldValue };
+
+          const exactListeners = listeners.get(path);
+          if (exactListeners) {
+            exactListeners.forEach(cb => cb(value));
+          }
+
+          for (let i = 0; i < parts.length; i++) {
+            const parentPath = parts.slice(0, i + 1).join('.');
+            const wildcardListeners = listeners.get(`${parentPath}.*`);
+            if (wildcardListeners) {
+              wildcardListeners.forEach(cb => cb(detail));
+            }
+          }
+
+          const globalListeners = listeners.get('*');
+          if (globalListeners) {
+            globalListeners.forEach(cb => cb(detail));
+          }
+        }
+
+        return value;
+      },
+
+      subscribe(path, handler) {
+        if (destroyed) throw new Error('Cannot subscribe to destroyed store');
+        if (!path || typeof handler !== 'function') {
+          throw new TypeError('subscribe requires path and handler');
+        }
+
+        if (!listeners.has(path)) {
+          listeners.set(path, new Set());
+        }
+        listeners.get(path).add(handler);
+
+        return () => listeners.get(path)?.delete(handler);
+      },
+
+      destroy() {
+        if (!destroyed) {
+          destroyed = true;
+          listeners.clear();
+        }
+      }
+    };
+  }
+
+  // ═══════════════════════════════════════════════
+  // EXERCISES CATALOG
+  // ═══════════════════════════════════════════════
+
+  const EXERCISES = [
+    { id: 'counter',         num: '001', title: 'What is eventState? \u2014 Counter', stack: 'eventState', level: 'beginner',     active: false,  url: 'dev-history-standalone-001.html' },
+    { id: 'double-counter',  num: '002', title: 'Double counter',                  stack: 'eventState', level: 'beginner',     active: false, url: 'dev-history-standalone-002.html' },
+    { id: 'state-inspector', num: '003', title: 'Global state in <pre><code>',     stack: 'eventState', level: 'beginner',     active: false, url: 'dev-history-standalone-003.html' },
+    { id: 'undo-redo',       num: '004', title: 'Undo / redo via wildcard subs',   stack: 'eventState', level: 'intermediate', active: false, url: 'dev-history-standalone-004.html' },
+    { id: 'todo-list',       num: '005', title: 'Todo list with nested paths',     stack: 'eventState', level: 'intermediate', active: false, url: 'dev-history-standalone-005.html' },
+    { id: 'form-validation', num: '006', title: 'Reactive form validation',        stack: 'eventState', level: 'intermediate', active: false, url: 'dev-history-standalone-006.html' },
+    { id: 'theme-switcher',  num: '007', title: 'Theme switcher with cssState',    stack: 'eventState', level: 'beginner',     active: false, url: 'dev-history-standalone-007.html' },
+    { id: 'fetch-loader',    num: '008', title: 'Async fetch with loading state',  stack: 'eventState', level: 'intermediate', active: false, url: 'dev-history-standalone-008.html' },
+    { id: 'drag-sort',       num: '009', title: 'Drag-to-sort list',               stack: 'eventState', level: 'advanced',     active: false, url: 'dev-history-standalone-009.html' },
+    { id: 'mini-spreadsheet',num: '010', title: 'Mini spreadsheet with formulas',  stack: 'eventState', level: 'advanced',     active: false, url: 'dev-history-standalone-010.html' },
+    { id: 'html-first-page', num: '011', title: 'Your first webpage',              stack: 'HTML Basics', level: 'beginner',    active: false, url: 'dev-history-standalone-011.html' },
+    { id: 'html-lists-links',num: '012', title: 'Lists & links',                   stack: 'HTML Basics', level: 'beginner',    active: false, url: 'dev-history-standalone-012.html' },
+    { id: 'html-forms',      num: '013', title: 'Forms 101',                       stack: 'HTML Basics', level: 'beginner',    active: false, url: 'dev-history-standalone-013.html' },
+    { id: 'css-first-stylesheet', num: '014', title: 'Your first stylesheet',          stack: 'CSS Basics',  level: 'beginner',    active: true, url: 'dev-history-standalone-014.html' },
+    { id: 'css-box-model',    num: '015', title: 'The box model',                     stack: 'CSS Basics',  level: 'beginner',    active: false, url: 'dev-history-standalone-015.html' },
+    { id: 'css-selectors',    num: '016', title: 'Selectors & classes',                stack: 'CSS Basics',  level: 'beginner',    active: false, url: 'dev-history-standalone-016.html' },
+  ];
+
+  // ═══════════════════════════════════════════════
+  // TUTORIAL STEPS — Building a Counter with eventState
+  // ═══════════════════════════════════════════════
+
+  function buildTutorialHistory() {
+    const steps = [];
+    const files = {};
+    function snap(title, explain, diff) { steps.push({ index: steps.length, title, explain, diff: diff || { added: [], removed: [], modified: [] }, fileCount: Object.keys(files).length, files: JSON.parse(JSON.stringify(files)) }); }
+    function add(path, content) { files[path] = { content, lines: content.split('\n').length, size: content.length }; }
+    function mod(path, content) { files[path] = { content, lines: content.split('\n').length, size: content.length }; }
+
+    // Step 1 — Plain HTML, no styles
+    add('index.html',
+`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Styled Page</title>
+</head>
+<body>
+  <h1>Welcome</h1>
+  <p>This page has no styling yet. The browser applies
+  its default styles: serif font, black text, white background.</p>
+</body>
+</html>`);
+    snap('Unstyled HTML', 'Every browser has a built-in <strong>user-agent stylesheet</strong> that provides default styling — serif fonts, black text, white background, and default margins. CSS lets us override every one of these defaults.');
+
+    // Step 2 — Inline styles
+    mod('index.html',
+`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Styled Page</title>
+</head>
+<body>
+  <h1 style="color: darkblue;">Welcome</h1>
+  <p style="color: gray; font-size: 18px;">This page now uses
+  inline styles. Each element gets its own style attribute.</p>
+</body>
+</html>`);
+    snap('Inline styles', 'The <code>style</code> attribute lets you add CSS directly to an element. Each declaration is a <strong>property: value</strong> pair separated by semicolons. This works but gets messy fast — imagine styling 50 elements this way!', { added: [], removed: [], modified: ['index.html'] });
+
+    // Step 3 — Move to <style> tag
+    mod('index.html',
+`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Styled Page</title>
+  <style>
+    h1 {
+      color: darkblue;
+    }
+    p {
+      color: gray;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome</h1>
+  <p>This page now uses an internal stylesheet.
+  All styles live in one place.</p>
+</body>
+</html>`);
+    snap('Internal stylesheet', 'A <code>&lt;style&gt;</code> tag in the <code>&lt;head&gt;</code> lets you write CSS rules that apply to the whole page. Each rule has a <strong>selector</strong> (like <code>h1</code>) and a <strong>declaration block</strong> (<code>{ property: value; }</code>). Much cleaner than inline styles!', { added: [], removed: [], modified: ['index.html'] });
+
+    // Step 4 — Change background and font family
+    mod('index.html',
+`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Styled Page</title>
+  <style>
+    body {
+      background-color: #f0f4f8;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    h1 {
+      color: darkblue;
+    }
+    p {
+      color: #555;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome</h1>
+  <p>Now the whole page has a light background, a clean sans-serif
+  font, and comfortable line spacing.</p>
+</body>
+</html>`);
+    snap('Background & font family', 'Styling the <code>body</code> element affects the entire page. <code>background-color</code> sets the page color. <code>font-family</code> lists fonts in order of preference — the browser uses the first one it finds. <code>line-height: 1.6</code> adds breathing room between lines of text.', { added: [], removed: [], modified: ['index.html'] });
+
+    // Step 5 — Add color with hex codes
+    mod('index.html',
+`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Styled Page</title>
+  <style>
+    body {
+      background-color: #f0f4f8;
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+    }
+    h1 {
+      color: #1e3a5f;
+      background-color: #1e3a5f;
+      color: #ffffff;
+      padding: 20px;
+    }
+    p {
+      color: #555;
+      font-size: 18px;
+      line-height: 1.6;
+      padding: 0 20px;
+    }
+    a {
+      color: #2563eb;
+    }
+    a:hover {
+      color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome</h1>
+  <p>Colors in CSS can be named (<code>darkblue</code>), hex codes
+  (<code>#1e3a5f</code>), or RGB values. Hex is most common.</p>
+  <p>Try hovering <a href="#">this link</a> to see the hover color.</p>
+</body>
+</html>`);
+    snap('Colors & hex codes', 'CSS colors can be <strong>named</strong> (<code>red</code>, <code>darkblue</code>), <strong>hex</strong> (<code>#1e3a5f</code> = red, green, blue in hexadecimal), or <strong>rgb()</strong>. The <code>a:hover</code> rule is a <strong>pseudo-class</strong> — it applies only when the user hovers over the link.', { added: [], removed: [], modified: ['index.html'] });
+
+    // Step 6 — Font sizing (px, em, rem)
+    mod('index.html',
+`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Styled Page</title>
+  <style>
+    body {
+      background-color: #f0f4f8;
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      font-size: 16px;
+    }
+    h1 {
+      font-size: 2rem;
+      color: #ffffff;
+      background-color: #1e3a5f;
+      padding: 20px;
+      margin: 0;
+    }
+    h2 {
+      font-size: 1.5rem;
+      color: #1e3a5f;
+      padding: 0 20px;
+    }
+    p {
+      color: #555;
+      font-size: 1rem;
+      line-height: 1.6;
+      padding: 0 20px;
+    }
+    .small-text {
+      font-size: 0.875rem;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome</h1>
+  <h2>Font Sizes</h2>
+  <p>This paragraph uses <code>1rem</code> (16px by default).</p>
+  <p class="small-text">This smaller text uses <code>0.875rem</code> (14px).</p>
+</body>
+</html>`);
+    snap('Font sizing with rem', '<code>px</code> is an absolute unit. <code>rem</code> is relative to the root font size (usually 16px). So <code>1.5rem</code> = 24px. Using <code>rem</code> makes your design scale nicely if the user changes their browser font size. <strong>Prefer rem for font sizes.</strong>', { added: [], removed: [], modified: ['index.html'] });
+
+    // Step 7 — Move to external stylesheet
+    add('style.css',
+`body {
+  background-color: #f0f4f8;
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  font-size: 16px;
+}
+
+h1 {
+  font-size: 2rem;
+  color: #ffffff;
+  background-color: #1e3a5f;
+  padding: 20px;
+  margin: 0;
+}
+
+h2 {
+  font-size: 1.5rem;
+  color: #1e3a5f;
+  padding: 0 20px;
+}
+
+p {
+  color: #555;
+  font-size: 1rem;
+  line-height: 1.6;
+  padding: 0 20px;
+}
+
+.small-text {
+  font-size: 0.875rem;
+  color: #888;
+}
+
+a { color: #2563eb; }
+a:hover { color: #1d4ed8; }`);
+    mod('index.html',
+`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Styled Page</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Welcome</h1>
+  <h2>Font Sizes</h2>
+  <p>This paragraph uses <code>1rem</code> (16px by default).</p>
+  <p class="small-text">This smaller text uses <code>0.875rem</code> (14px).</p>
+  <p>All styles now live in <a href="#">style.css</a> — a separate file!</p>
+</body>
+</html>`);
+    snap('External stylesheet', 'The <code>&lt;link&gt;</code> tag loads CSS from a separate file. This is the <strong>best practice</strong> for real projects: it keeps HTML clean, lets multiple pages share the same styles, and the browser can cache the CSS file for faster loading.', { added: ['style.css'], removed: [], modified: ['index.html'] });
+
+    return steps;
+  }
+
+  // ═══════════════════════════════════════════════
+  // STATE TREE (powered by the embedded eventState above!)
+  // ═══════════════════════════════════════════════
+
+  const store = createEventState({
+    steps: [],
+    playhead: 0,
+    selectedFile: null,
+    viewMode: 'source',
+    playing: false
+  });
+
+  // ═══════════════════════════════════════════════
+  // SIMPLE LINE DIFF
+  // ═══════════════════════════════════════════════
+
+  function diffLines(oldLines, newLines) {
+    const result = [];
+    let oi = 0, ni = 0;
+    const oldSet = new Set(oldLines);
+    const newSet = new Set(newLines);
+
+    while (oi < oldLines.length || ni < newLines.length) {
+      if (oi < oldLines.length && ni < newLines.length && oldLines[oi] === newLines[ni]) {
+        result.push({ type: 'same', text: newLines[ni], lineNew: ni + 1 });
+        oi++; ni++;
+      } else if (ni < newLines.length && (oi >= oldLines.length || !oldSet.has(newLines[ni]) || oldLines[oi] !== newLines[ni])) {
+        if (oi < oldLines.length && !newSet.has(oldLines[oi])) {
+          result.push({ type: 'removed', text: oldLines[oi], lineOld: oi + 1 });
+          oi++;
+        } else {
+          result.push({ type: 'added', text: newLines[ni], lineNew: ni + 1 });
+          ni++;
+        }
+      } else if (oi < oldLines.length) {
+        result.push({ type: 'removed', text: oldLines[oi], lineOld: oi + 1 });
+        oi++;
+      }
+    }
+    return result;
+  }
+
+  // ═══════════════════════════════════════════════
+  // PROJECTION
+  // ═══════════════════════════════════════════════
+
+  function currentStep() {
+    return store.get('steps')[store.get('playhead')] || null;
+  }
+
+  function prevStep() {
+    const idx = store.get('playhead');
+    return idx > 0 ? store.get('steps')[idx - 1] : null;
+  }
+
+  function projectStepInfo() {
+    const s = currentStep();
+    if (!s) return;
+    const total = store.get('steps').length;
+    const ph = store.get('playhead');
+
+    document.getElementById('stepNum').textContent = `Step ${ph + 1}`;
+    document.getElementById('stepTitle').textContent = s.title;
+    document.getElementById('scrubInfo').textContent = `${ph + 1} / ${total}`;
+    document.getElementById('scrubber').value = ph;
+    document.getElementById('stepLabel').textContent = `Step ${ph + 1} of ${total}`;
+
+    // Explanation
+    document.getElementById('explainStrip').innerHTML = s.explain;
+
+    // Diff badges
+    const d = s.diff;
+    let badges = '';
+    if (d.added.length) badges += `<span class="badge green">+${d.added.length} file${d.added.length > 1 ? 's' : ''}</span> `;
+    if (d.modified.length) badges += `<span class="badge amber">~${d.modified.length} file${d.modified.length > 1 ? 's' : ''}</span> `;
+    document.getElementById('diffBadges').innerHTML = badges;
+
+    // Stats
+    document.getElementById('statSteps').textContent = total;
+    document.getElementById('statFiles').textContent = s.fileCount;
+    document.getElementById('statAdded').textContent = d.added.length;
+    document.getElementById('statModified').textContent = d.modified.length;
+  }
+
+  function projectFileTree() {
+    const s = currentStep();
+    if (!s) return;
+    const tree = document.getElementById('fileTree');
+    const selectedFile = store.get('selectedFile');
+
+    const allFiles = Object.keys(s.files).sort();
+    const changeMap = {};
+    s.diff.added.forEach(f => changeMap[f] = 'added');
+    s.diff.modified.forEach(f => changeMap[f] = 'modified');
+
+    let html = '';
+    allFiles.forEach(fp => {
+      const change = changeMap[fp] || '';
+      const selected = fp === selectedFile ? 'selected' : '';
+      const icon = fp.endsWith('.json') ? '\u{1F4CB}' : fp.endsWith('.html') ? '\u{1F310}' : '\u{1F4C4}';
+      html += `<div class="file-entry ${change} ${selected}" data-file="${fp}">`;
+      html += `<span class="file-icon">${icon}</span>`;
+      html += `${fp}`;
+      html += '</div>';
+    });
+    tree.innerHTML = html;
+    document.getElementById('fileCount').textContent = allFiles.length;
+
+    tree.querySelectorAll('.file-entry').forEach(el => {
+      el.addEventListener('click', () => {
+        store.set('selectedFile', el.dataset.file);
+        projectAll();
+        // Auto-close file tree drawer on mobile
+        document.querySelector('.file-tree').classList.remove('mobile-open');
+        document.getElementById('tglFiles')?.classList.remove('active');
+      });
+    });
+  }
+
+  function projectTOC() {
+    const steps = store.get('steps');
+    const ph = store.get('playhead');
+    const list = document.getElementById('tocList');
+
+    let html = '';
+    steps.forEach((s, i) => {
+      const isCurrent = i === ph;
+      const isCompleted = i < ph;
+      let cls = 'toc-entry';
+      if (isCurrent) cls += ' current';
+      else if (isCompleted) cls += ' completed';
+
+      const check = isCompleted ? '\u2713' : isCurrent ? '\u25B6' : '\u00A0';
+      html += `<div class="${cls}" data-step="${i}">`;
+      html += `<span class="toc-check">${check}</span>`;
+      html += `<span class="toc-num">${i + 1}.</span>`;
+      html += `<span class="toc-title">${escHtml(s.title)}</span>`;
+      html += '</div>';
+    });
+    list.innerHTML = html;
+
+    list.querySelectorAll('.toc-entry').forEach(el => {
+      el.addEventListener('click', () => {
+        store.set('playhead', parseInt(el.dataset.step));
+        projectAll();
+      });
+    });
+
+    // Scroll current into view
+    const currentEl = list.querySelector('.toc-entry.current');
+    if (currentEl) currentEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  function projectExercises() {
+    const list = document.getElementById('exercisesList');
+    // Group by stack
+    const stacks = [];
+    const stackMap = {};
+    EXERCISES.forEach(ex => {
+      if (!stackMap[ex.stack]) { stackMap[ex.stack] = []; stacks.push(ex.stack); }
+      stackMap[ex.stack].push(ex);
+    });
+
+    // Find which stack contains the active exercise
+    const activeEx = EXERCISES.find(e => e.active);
+    const activeStack = activeEx ? activeEx.stack : stacks[0];
+
+    let html = '';
+    stacks.forEach(stack => {
+      const isOpen = stack === activeStack;
+      html += `<div class="stack-group-header${isOpen ? ' expanded' : ''}" data-stack="${escHtml(stack)}">${escHtml(stack)}</div>`;
+      html += `<div class="stack-group-body${isOpen ? ' expanded' : ''}">`;
+      stackMap[stack].forEach(ex => {
+        const cls = ex.active ? 'exercise-entry active-exercise' : 'exercise-entry';
+        html += `<div class="${cls}" data-ex="${ex.id}">`;
+        html += `<span class="ex-num">${ex.num}</span>`;
+        html += `<span class="ex-title">${escHtml(ex.title)}</span>`;
+        html += `<span class="ex-badge ${ex.level}">${ex.level}</span>`;
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+    list.innerHTML = html;
+
+    // Accordion toggle
+    list.querySelectorAll('.stack-group-header').forEach(hdr => {
+      hdr.addEventListener('click', () => {
+        hdr.classList.toggle('expanded');
+        const body = hdr.nextElementSibling;
+        if (body) body.classList.toggle('expanded');
+      });
+    });
+
+    list.querySelectorAll('.exercise-entry').forEach(el => {
+      el.addEventListener('click', () => {
+        const ex = EXERCISES.find(e => e.id === el.dataset.ex);
+        if (ex && ex.url) window.location.href = ex.url;
+      });
+    });
+
+    // Stack dropdown
+    const sel = document.getElementById('stackSelect');
+    sel.innerHTML = stacks.map(s => `<option value="${escHtml(s)}">${escHtml(s)}</option>`).join('');
+    if (activeEx) sel.value = activeEx.stack;
+    sel.addEventListener('change', () => {
+      const firstInStack = EXERCISES.find(e => e.stack === sel.value);
+      if (firstInStack && firstInStack.url) window.location.href = firstInStack.url;
+    });
+  }
+
+  function projectFileContent() {
+    const s = currentStep();
+    const selectedFile = store.get('selectedFile');
+    const viewMode = store.get('viewMode');
+    const body = document.getElementById('contentBody');
+    const header = document.getElementById('contentHeader');
+
+    if (!s || !selectedFile) {
+      header.style.display = 'none';
+      body.innerHTML = '<div class="welcome"><h2>Select a file from the tree</h2><p>Step through the timeline to see how the app is built</p></div>';
+      return;
+    }
+
+    header.style.display = 'flex';
+    document.getElementById('selectedFilePath').textContent = selectedFile;
+
+    const fileData = s.files[selectedFile];
+    if (!fileData) {
+      body.innerHTML = '<div class="welcome"><h2>File does not exist at this step</h2></div>';
+      document.getElementById('fileMeta').textContent = '';
+      return;
+    }
+
+    document.getElementById('fileMeta').textContent = `${fileData.lines} lines \u00B7 ${fileData.size} bytes`;
+
+    // Show green dot on LIVE tab when step has a script (interactive)
+    const liveTab = document.getElementById('tabLive');
+    const indexHtml = s.files['index.html']?.content || '';
+    if (indexHtml.includes('<script') && indexHtml.includes('createEventState')) {
+      liveTab.classList.add('live-indicator');
+    } else {
+      liveTab.classList.remove('live-indicator');
+    }
+
+    if (viewMode === 'source') {
+      renderSource(fileData.content, body);
+    } else if (viewMode === 'diff') {
+      renderDiff(selectedFile, body);
+    } else if (viewMode === 'live') {
+      renderLive(body);
+    }
+  }
+
+  function renderSource(content, container) {
+    const lines = content.split('\n');
+    let html = '<div class="code-view">';
+    lines.forEach((line, i) => {
+      html += `<span class="code-line"><span class="ln">${i + 1}</span>${escHtml(line)}</span>\n`;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  function renderDiff(filePath, container) {
+    const s = currentStep();
+    const prev = prevStep();
+
+    const newContent = s.files[filePath]?.content || '';
+    const oldContent = prev?.files[filePath]?.content || '';
+
+    if (oldContent === newContent) {
+      container.innerHTML = '<div class="welcome"><h2>No changes at this step</h2><p>This file was not modified in this step</p></div>';
+      return;
+    }
+
+    const oldLines = oldContent ? oldContent.split('\n') : [];
+    const newLines = newContent.split('\n');
+    const diffs = diffLines(oldLines, newLines);
+
+    let html = '<div class="code-view">';
+    let lineNum = 0;
+    diffs.forEach(d => {
+      if (d.type === 'same') {
+        lineNum++;
+        html += `<span class="diff-line"><span class="ln">${lineNum}</span><span class="diff-marker"> </span>${escHtml(d.text)}</span>\n`;
+      } else if (d.type === 'added') {
+        lineNum++;
+        html += `<span class="diff-line added-line"><span class="ln">${lineNum}</span><span class="diff-marker">+</span>${escHtml(d.text)}</span>\n`;
+      } else {
+        html += `<span class="diff-line removed-line"><span class="ln">\u2212</span><span class="diff-marker">\u2212</span>${escHtml(d.text)}</span>\n`;
+      }
+    });
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  // ═══════════════════════════════════════════════
+  // LIVE PREVIEW
+  // ═══════════════════════════════════════════════
+
+  // The embedded eventState source — we inject this into the iframe
+  // so the tutorial's import statements actually resolve.
+  const EMBEDDED_EVENT_STATE_SRC = `
+function createEventState(initial = {}) {
+  const state = JSON.parse(JSON.stringify(initial));
+  const listeners = new Map();
+  let destroyed = false;
+  return {
+    get(path) {
+      if (destroyed) throw new Error('Cannot get from destroyed store');
+      if (!path) return state;
+      return path.split(".").reduce((obj, key) => obj?.[key], state);
+    },
+    set(path, value) {
+      if (destroyed) throw new Error('Cannot set on destroyed store');
+      if (!path) return value;
+      const parts = path.split(".");
+      const key = parts.pop();
+      let cur = state;
+      for (const p of parts) { if (!cur[p]) cur[p] = {}; cur = cur[p]; }
+      const oldValue = cur[key];
+      cur[key] = value;
+      if (!destroyed) {
+        const detail = { path, value, oldValue };
+        const exact = listeners.get(path);
+        if (exact) exact.forEach(cb => cb(value));
+        for (let i = 0; i < parts.length; i++) {
+          const pp = parts.slice(0, i + 1).join('.');
+          const wl = listeners.get(pp + '.*');
+          if (wl) wl.forEach(cb => cb(detail));
+        }
+        const gl = listeners.get('*');
+        if (gl) gl.forEach(cb => cb(detail));
+      }
+      return value;
+    },
+    subscribe(path, handler) {
+      if (destroyed) throw new Error('Cannot subscribe to destroyed store');
+      if (!path || typeof handler !== 'function') throw new TypeError('subscribe requires path and handler');
+      if (!listeners.has(path)) listeners.set(path, new Set());
+      listeners.get(path).add(handler);
+      return () => listeners.get(path)?.delete(handler);
+    },
+    destroy() { if (!destroyed) { destroyed = true; listeners.clear(); } }
+  };
+}
+`;
+
+  function renderLive(container) {
+    const s = currentStep();
+    if (!s) return;
+
+    // Find the index.html content for this step
+    const htmlContent = s.files['index.html']?.content || '';
+
+    // Rewrite the HTML to make it self-contained:
+    // 1. Remove the importmap script (not needed — we inline the lib)
+    // 2. Replace the ES module import with an inline script
+    let liveHtml = htmlContent;
+
+    // Remove importmap
+    liveHtml = liveHtml.replace(/<script type="importmap">[\s\S]*?<\/script>\s*/i, '');
+
+    // Replace module script that imports createEventState
+    // with a regular script that has the lib inlined
+    liveHtml = liveHtml.replace(
+      /<script type="module">\s*import\s*\{[^}]*\}\s*from\s*['"][^'"]*['"];?/i,
+      '<script>\n' + EMBEDDED_EVENT_STATE_SRC
+    );
+
+    // If the script tag is still type="module" after replacement, convert it
+    // (handles cases where the import line was the only module-specific thing)
+    // Already handled by the replace above.
+
+    let html = '<div class="live-preview-wrap">';
+    html += '<span class="live-label">Live Preview — Step ' + (store.get('playhead') + 1) + '</span>';
+    html += '<iframe id="liveFrame" sandbox="allow-scripts"></iframe>';
+    html += '</div>';
+    container.innerHTML = html;
+
+    const frame = document.getElementById('liveFrame');
+    frame.srcdoc = liveHtml;
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function projectAll() {
+    // Auto-select the most relevant file for this step
+    const s = currentStep();
+    if (s) {
+      const sel = store.get('selectedFile');
+      const allFiles = Object.keys(s.files);
+      const hasAdded = s.diff.added && s.diff.added.length;
+      const hasMod   = s.diff.modified && s.diff.modified.length;
+      // Prefer newly added file, then modified, then keep current if valid, else first file
+      const pick = (hasAdded && s.diff.added[0])
+                || (hasMod && s.diff.modified[0])
+                || (sel && s.files[sel] ? sel : null)
+                || allFiles[0]
+                || null;
+      if (pick !== sel) store.set('selectedFile', pick);
+    }
+    projectStepInfo();
+    projectFileTree();
+    projectFileContent();
+    projectTOC();
+  }
+
+  // ═══════════════════════════════════════════════
+  // CONTROLS
+  // ═══════════════════════════════════════════════
+
+  document.getElementById('scrubber').addEventListener('input', (e) => {
+    goToStep(parseInt(e.target.value));
+  });
+
+  document.getElementById('btnFirst').addEventListener('click', () => goToStep(0));
+  document.getElementById('btnLast').addEventListener('click', () => goToStep(store.get('steps').length - 1));
+  document.getElementById('btnPrev').addEventListener('click', () => goToStep(store.get('playhead') - 1));
+  document.getElementById('btnNext').addEventListener('click', () => goToStep(store.get('playhead') + 1));
+
+  // Play
+  let playTimer = null;
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    const btn = document.getElementById('btnPlay');
+    if (playTimer) {
+      clearInterval(playTimer); playTimer = null;
+      btn.classList.remove('active');
+      btn.textContent = '\u25B6 Play';
+      return;
+    }
+    btn.classList.add('active');
+    btn.textContent = '\u23F8 Pause';
+    if (store.get('playhead') >= store.get('steps').length - 1) {
+      goToStep(0);
+    }
+    playTimer = setInterval(() => {
+      const p = store.get('playhead');
+      if (p >= store.get('steps').length - 1) {
+        clearInterval(playTimer); playTimer = null;
+        btn.classList.remove('active');
+        btn.textContent = '\u25B6 Play';
+        return;
+      }
+      goToStep(p + 1);
+    }, 2500);
+    projectAll();
+  });
+
+  // Copy single file to clipboard
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    const s = currentStep();
+    const selectedFile = store.get('selectedFile');
+    if (!s || !selectedFile) return;
+    const fileData = s.files[selectedFile];
+    if (!fileData) return;
+    navigator.clipboard.writeText(fileData.content).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.classList.add('copied');
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => { btn.classList.remove('copied'); btn.textContent = '📋 Copy'; }, 1500);
+    });
+  });
+
+  // Copy ALL files at current step
+  document.getElementById('copyAllBtn').addEventListener('click', () => {
+    const s = currentStep();
+    if (!s) return;
+    let text = '';
+    for (const [path, data] of Object.entries(s.files)) {
+      text += '// ====== ' + path + ' ======\n';
+      text += data.content + '\n\n';
+    }
+    navigator.clipboard.writeText(text.trim()).then(() => {
+      const btn = document.getElementById('copyAllBtn');
+      btn.classList.add('copied');
+      btn.textContent = '✓ All Copied!';
+      setTimeout(() => { btn.classList.remove('copied'); btn.textContent = '📦 Copy All'; }, 1500);
+    });
+  });
+
+  // Print all steps
+  document.getElementById('btnPrint').addEventListener('click', () => {
+    const steps = store.get('steps');
+    if (!steps) return;
+    const container = document.getElementById('printAllView');
+    let html = '';
+    steps.forEach((s, i) => {
+      html += '<div class="print-step">';
+      html += '<div class="print-step-header"><span class="pnum">Step ' + (i+1) + '</span> ' + escHtml(s.title) + '</div>';
+      html += '<div class="print-step-explain">' + s.explain + '</div>';
+      const mainFile = s.files['index.html'];
+      if (mainFile) {
+        html += '<div class="print-step-code">';
+        mainFile.content.split('\n').forEach((line, ln) => {
+          html += '<span class="pln">' + (ln+1) + '</span>' + escHtml(line) + '\n';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+    });
+    container.innerHTML = html;
+    container.style.display = 'block';
+    window.print();
+    setTimeout(() => { container.style.display = 'none'; }, 500);
+  });
+
+  // ═══════════════════════════════════════════════
+  // NAVIGATION HELPER (hash sync + localStorage)
+  // ═══════════════════════════════════════════════
+
+  const EXERCISE_KEY = 'dhv_' + (EXERCISES.find(e => e.active)?.id || 'unknown');
+
+  function goToStep(idx) {
+    const steps = store.get('steps');
+    if (!steps) return;
+    idx = Math.max(0, Math.min(idx, steps.length - 1));
+    store.set('playhead', idx);
+    document.getElementById('scrubber').value = idx;
+    // URL hash sync
+    history.replaceState(null, '', '#step=' + (idx + 1));
+    // localStorage persistence
+    try { localStorage.setItem(EXERCISE_KEY, idx); } catch(e) {}
+    projectAll();
+  }
+
+  // Keyboard: numpad/number keys + arrow keys
+  document.addEventListener('keydown', (e) => {
+    const steps = store.get('steps');
+    if (!steps) return;
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+    // Arrow keys
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goToStep(store.get('playhead') - 1); return; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goToStep(store.get('playhead') + 1); return; }
+
+    // Number keys 1-9, 0=step 10
+    let num = -1;
+    if (e.key >= '0' && e.key <= '9') num = parseInt(e.key);
+    if (e.code >= 'Numpad0' && e.code <= 'Numpad9') num = parseInt(e.code.slice(-1));
+    if (num < 0) return;
+    const stepNum = num === 0 ? 10 : num;
+    goToStep(stepNum - 1);
+  });
+
+  // Mobile drawer toggles
+  document.getElementById('tglFiles').addEventListener('click', () => {
+    const ft = document.querySelector('.file-tree');
+    const btn = document.getElementById('tglFiles');
+    ft.classList.toggle('mobile-open');
+    btn.classList.toggle('active');
+    // Close the other panel
+    document.querySelector('.right-sidebar').classList.remove('mobile-open');
+    document.getElementById('tglSidebar').classList.remove('active');
+  });
+  document.getElementById('tglSidebar').addEventListener('click', () => {
+    const sb = document.querySelector('.right-sidebar');
+    const btn = document.getElementById('tglSidebar');
+    sb.classList.toggle('mobile-open');
+    btn.classList.toggle('active');
+    // Close the other panel
+    document.querySelector('.file-tree').classList.remove('mobile-open');
+    document.getElementById('tglFiles').classList.remove('active');
+  });
+
+  // Tab switching
+  document.querySelectorAll('.content-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.content-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      store.set('viewMode', tab.dataset.tab);
+      projectFileContent();
+    });
+  });
+
+  // ═══════════════════════════════════════════════
+  // BOOT
+  // ═══════════════════════════════════════════════
+
+  const tutorialHistory = buildTutorialHistory();
+  store.set('steps', tutorialHistory);
+  store.set('selectedFile', 'index.html');
+
+  const scrubber = document.getElementById('scrubber');
+  scrubber.max = tutorialHistory.length - 1;
+
+  // Restore step from URL hash > localStorage > 0
+  let initialStep = 0;
+  const hashMatch = location.hash.match(/step=(\d+)/);
+  if (hashMatch) {
+    initialStep = Math.min(parseInt(hashMatch[1]) - 1, tutorialHistory.length - 1);
+  } else {
+    try {
+      const saved = localStorage.getItem(EXERCISE_KEY);
+      if (saved !== null) initialStep = Math.min(parseInt(saved), tutorialHistory.length - 1);
+    } catch(e) {}
+  }
+  store.set('playhead', Math.max(0, initialStep));
+  scrubber.value = store.get('playhead');
+
+  projectExercises();
+  projectAll();
+  // Set initial hash
+  history.replaceState(null, '', '#step=' + (store.get('playhead') + 1));
+
+  // ═══════════════════════════════════════════════
+  // THEME TOGGLE
+  // ═══════════════════════════════════════════════
+  (function initTheme() {
+    const btn = document.getElementById('themeToggle');
+    const root = document.documentElement;
+    const THEME_KEY = 'dhv-theme';
+
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        root.setAttribute('data-theme', 'light');
+        btn.textContent = '☀️ Light';
+      } else {
+        root.removeAttribute('data-theme');
+        btn.textContent = '🌙 Dark';
+      }
+      try { localStorage.setItem(THEME_KEY, theme); } catch(e) {}
+    }
+
+    // Restore from localStorage, default to dark
+    const saved = (() => { try { return localStorage.getItem(THEME_KEY); } catch(e) { return null; } })();
+    applyTheme(saved || 'dark');
+
+    btn.addEventListener('click', () => {
+      const current = root.getAttribute('data-theme');
+      applyTheme(current === 'light' ? 'dark' : 'light');
+    });
+  })();
+
+</script>
+</body>
+</html>

@@ -7,7 +7,7 @@
 (function () {
   var stored = localStorage.getItem('uistate-theme');
   var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  var theme = stored || (prefersDark ? 'dark' : 'light');
+  var theme = stored || 'dark';
   document.documentElement.setAttribute('data-theme', theme);
 
   // Listen for system preference changes (only if user hasn't explicitly chosen)
